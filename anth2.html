@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biology Exam: Carbohydrates, Lipids, and Cell Structures</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        h1 {
+            text-align: center;
+        }
+        #exam-container {
+            display: block;
+        }
+        #results-container {
+            display: none;
+        }
+        .question {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .question h2 {
+            margin-top: 0;
+        }
+        .option {
+            margin: 10px 0;
+            display: block;
+        }
+        .option label {
+            display: inline-block;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background-color 0.3s, transform 0.1s;
+            cursor: pointer;
+        }
+        .option label:hover {
+            background-color: #e0f7fa;
+            transform: scale(1.02);
+        }
+        .buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        #score {
+            font-size: 36px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .result-item {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .correct { color: green; font-weight: bold; }
+        .incorrect { color: red; font-weight: bold; }
+        @media (max-width: 600px) {
+            body { padding: 5px; }
+            button { width: 100%; margin: 5px 0; }
+            .option label { padding: 6px; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Biology Exam</h1>
+    <div id="exam-container">
+        <div id="score"></div>
+        <div id="question-display"></div>
+        <div class="buttons">
+            <button id="prev-btn" onclick="prevQuestion()">Previous</button>
+            <button id="check-btn" onclick="checkAnswer()">Check Answer</button>
+            <button id="next-btn" onclick="nextQuestion()">Next</button>
+            <button id="submit-btn" onclick="submitExam()">Submit</button>
+        </div>
+    </div>
+    <div id="results-container">
+        <div id="score"></div>
+        <div id="results-list"></div>
+    </div>
+
+    <script>
+        let originalQuestions = [
+            {
+                question: "Which of the following can vary among monosaccharides?",
+                options: ["The number of carbon atoms", "The presence of nitrogen atoms", "The type of peptide bonds", "The saturation of fatty acids"],
+                correct: "The number of carbon atoms",
+                explanation: "Monosaccharides can have 3 to 7 carbon atoms (e.g., triose, hexose), while the other options are not characteristic of monosaccharides."
+            },
+            {
+                question: "What is the difference between an aldose sugar and a ketose sugar?",
+                options: ["The position of the carbonyl group", "The number of hydroxyl groups", "The ring structure formation", "The energy storage capacity"],
+                correct: "The position of the carbonyl group",
+                explanation: "Aldoses have a carbonyl group at the end (aldehyde), while ketoses have it in the middle (ketone)."
+            },
+            {
+                question: "Among the macromolecules, a molecule with the chemical formula C6H12O6 is probably a _____.",
+                options: ["A monosaccharide/Hexose", "A fatty acid", "An amino acid", "A nucleotide"],
+                correct: "A monosaccharide/Hexose",
+                explanation: "C6H12O6 corresponds to glucose, a hexose monosaccharide."
+            },
+            {
+                question: "What is the major structural difference between starch and glycogen?",
+                options: ["The amount of branching that occurs in the molecule", "The type of monosaccharide units", "The presence of alpha linkages", "The solubility in water"],
+                correct: "The amount of branching that occurs in the molecule",
+                explanation: "Glycogen has more branching than starch, allowing faster energy release."
+            },
+            {
+                question: "A glycosidic linkage is analogous to which of the following in proteins?",
+                options: ["A peptide bond", "A disulfide bridge", "A hydrogen bond", "A phosphodiester bond"],
+                correct: "A peptide bond",
+                explanation: "Both glycosidic and peptide bonds are covalent bonds linking monomers in polymers."
+            },
+            {
+                question: "Which polysaccharide is an important component in both the exoskeletons of many animals and cell walls of fungi?",
+                options: ["Chitin", "Cellulose", "Starch", "Glycogen"],
+                correct: "Chitin",
+                explanation: "Chitin provides structural support in arthropod exoskeletons and fungal cell walls."
+            },
+            {
+                question: "Lactose, a sugar in milk, is composed of one glucose molecule joined by a glycosidic linkage to one galactose molecule. How is lactose classified?",
+                options: ["A disaccharide", "A monosaccharide", "A polysaccharide", "A trisaccharide"],
+                correct: "A disaccharide",
+                explanation: "Lactose is two monosaccharides (glucose and galactose) linked together."
+            },
+            {
+                question: "Cellulose is ?",
+                options: ["A polysaccharide of beta-glucose units linked by β-1,4 glycosidic bonds, found in plant cell walls for strength", "A branched polymer of alpha-glucose for energy storage", "A disaccharide of fructose and glucose", "A lipid-based structural component"],
+                correct: "A polysaccharide of beta-glucose units linked by β-1,4 glycosidic bonds, found in plant cell walls for strength",
+                explanation: "Cellulose is a beta-glucose polymer in plant cell walls for rigidity."
+            },
+            {
+                question: "Which of the following is an example of a carbohydrate monomer, NOT a polymer?",
+                options: ["Glucose", "Starch", "Cellulose", "Glycogen"],
+                correct: "Glucose",
+                explanation: "Glucose is a simple sugar monomer, unlike the others, which are polymers."
+            },
+            {
+                question: "Why are carbohydrates advertised by manufacturers of candy bars and sports drinks as a 'quick energy boost'?",
+                options: ["Carbs are reduced molecules with high-energy electrons", "They form strong structural bonds", "They are amphipathic", "They store genetic information"],
+                correct: "Carbs are reduced molecules with high-energy electrons",
+                explanation: "Carbohydrates provide quick energy through oxidation of high-energy electrons."
+            },
+            {
+                question: "In a single molecule of glucose which bonds store the largest amount of potential energy?",
+                options: ["The carbon-hydrogen and carbon-carbon bonds/nonpolar covalent bonds", "The oxygen-oxygen bonds", "The ionic bonds", "The polar covalent bonds only"],
+                correct: "The carbon-hydrogen and carbon-carbon bonds/nonpolar covalent bonds",
+                explanation: "Nonpolar C-H and C-C bonds store high potential energy."
+            },
+            {
+                question: "A primary function of carbohydrates attached to the glycoproteins and glycolipids of animal cell membranes is to _____________.",
+                options: ["Mediate cell-cell recognition", "Store energy", "Transport ions", "Synthesize proteins"],
+                correct: "Mediate cell-cell recognition",
+                explanation: "Carbohydrates act as markers for cell identification."
+            },
+            {
+                question: "If you were going to develop a new antibiotic against bacteria, you would probably need to become an expert on which carbohydrates?",
+                options: ["Peptidoglycan and lipopolysaccharides", "Starch and glycogen", "Cellulose and chitin", "Glucose and fructose"],
+                correct: "Peptidoglycan and lipopolysaccharides",
+                explanation: "These are key components of bacterial cell walls."
+            },
+            {
+                question: "What type of linkages would you expect to find at a branch point in glycogen or amylopectin?",
+                options: ["α-1,6-glycosidic linkage", "β-1,4-glycosidic linkage", "α-1,4-glycosidic linkage", "Peptide linkage"],
+                correct: "α-1,6-glycosidic linkage",
+                explanation: "Branch points in glycogen and amylopectin use α-1,6 linkages."
+            },
+            {
+                question: "This complex molecule contains at least one peptide bond ______",
+                options: ["Peptidoglycan", "Glycogen", "Cellulose", "Cholesterol"],
+                correct: "Peptidoglycan",
+                explanation: "Peptidoglycan contains peptide bonds in its structure."
+            },
+            {
+                question: "How do the α and β forms of glucose differ?",
+                options: ["Their ring structures differ in the location of a hydroxyl group", "Their linear chains have different carbonyl positions", "One is a ketose, the other an aldose", "Their energy levels vary"],
+                correct: "Their ring structures differ in the location of a hydroxyl group",
+                explanation: "α and β glucose differ in the hydroxyl group orientation at C1."
+            },
+            {
+                question: "Glucose (C6H12O6) has a single carbonyl group (–C=O) in its linear form. Based on the number of oxygen atoms in glucose, how many hydroxyl groups (–OH) would you expect glucose to have?",
+                options: ["Five hydroxyl groups", "Six hydroxyl groups", "Four hydroxyl groups", "Three hydroxyl groups"],
+                correct: "Five hydroxyl groups",
+                explanation: "One oxygen is in the carbonyl, leaving five for hydroxyl groups."
+            },
+            {
+                question: "A phospholipid is a ________.",
+                options: ["Nonpolar lipid made amphipathic by a phosphate", "Fully nonpolar molecule", "Steroid with a hydroxyl group", "Triglyceride with three fatty acids"],
+                correct: "Nonpolar lipid made amphipathic by a phosphate",
+                explanation: "The phosphate group adds a polar head."
+            },
+            {
+                question: "Which of the following accurately describes a reason why fats store more energy than carbohydrates?",
+                options: ["Fatty acids have more high-energy bonds than carbs", "Fats have more oxygen atoms", "Carbs are more reduced", "Fats form rings"],
+                correct: "Fatty acids have more high-energy bonds than carbs",
+                explanation: "Fats have more C-H bonds, which store more energy."
+            },
+            {
+                question: "Lipids that contain a high number of double bonds in their fatty acid chains will ________.",
+                options: ["Be liquid at room temperature", "Be solid at room temperature", "Form bilayers easily", "Store less energy"],
+                correct: "Be liquid at room temperature",
+                explanation: "Unsaturated fats with double bonds are typically oils."
+            },
+            {
+                question: "What region of the steroid cholesterol is hydrophilic?",
+                options: ["The terminal hydroxyl group", "The hydrocarbon rings", "The fatty acid chain", "The entire molecule"],
+                correct: "The terminal hydroxyl group",
+                explanation: "The hydroxyl group is polar, making it hydrophilic."
+            },
+            {
+                question: "Cooking oil and gasoline (a hydrocarbon) are NOT amphipathic molecules because they ________.",
+                options: ["Lack a polar or charged region", "Have too many double bonds", "Are too large", "Form micelles"],
+                correct: "Lack a polar or charged region",
+                explanation: "They are fully nonpolar, lacking a hydrophilic region."
+            },
+            {
+                question: "Phospholipids and triglycerides both _____.",
+                options: ["Have a glycerol backbone", "Form cell walls", "Are steroids", "Have peptide bonds"],
+                correct: "Have a glycerol backbone",
+                explanation: "Both have glycerol as a structural component."
+            },
+            {
+                question: "Lipids ___.",
+                options: ["Are insoluble in water", "Are soluble in water", "Always form polymers", "Contain nitrogen"],
+                correct: "Are insoluble in water",
+                explanation: "Lipids are hydrophobic."
+            },
+            {
+                question: "Which of the following is a large organic molecule that is NOT assembled by polymerization of a few kinds of simple subunits?",
+                options: ["A steroid", "A polysaccharide", "A protein", "A nucleic acid"],
+                correct: "A steroid",
+                explanation: "Steroids are not polymers, unlike the others."
+            },
+            {
+                question: "Steroids are considered to be lipids because they ________.",
+                options: ["Are not soluble in water", "Have glycerol", "Form bilayers", "Are polymers"],
+                correct: "Are not soluble in water",
+                explanation: "Steroids are hydrophobic, like other lipids."
+            },
+            {
+                question: "A major feature of phospholipids that causes a portion of their structure to be hydrophilic is:",
+                options: ["The phosphate group", "The fatty acid tails", "The steroid ring", "The double bonds"],
+                correct: "The phosphate group",
+                explanation: "The phosphate group is charged and hydrophilic."
+            },
+            {
+                question: "Lipids that form membranes have what kind of structure?",
+                options: ["Polar heads and nonpolar tails", "Fully polar structure", "Nonpolar heads and polar tails", "Ring structures only"],
+                correct: "Polar heads and nonpolar tails",
+                explanation: "Their amphipathic nature allows membrane formation."
+            },
+            {
+                question: "Which aspect of phospholipids is most important to the formation of bilayers?",
+                options: ["They are amphipathic", "They are fully hydrophobic", "They have steroid cores", "They polymerize"],
+                correct: "They are amphipathic",
+                explanation: "Amphipathic nature drives bilayer formation."
+            },
+            {
+                question: "Which of the following increases the strength of the hydrophobic interactions in lipid bilayers and thus makes them less permeable to polar molecules?",
+                options: ["Increasing length of hydrocarbon chains", "Adding more double bonds", "Removing cholesterol", "Shortening tails"],
+                correct: "Increasing length of hydrocarbon chains",
+                explanation: "Longer chains enhance hydrophobic interactions."
+            },
+            {
+                question: "Which of the following crosses lipid bilayers the fastest?",
+                options: ["A small, nonpolar molecule like oxygen (O2)", "A large polar molecule", "A charged ion", "A protein"],
+                correct: "A small, nonpolar molecule like oxygen (O2)",
+                explanation: "Nonpolar molecules diffuse easily through bilayers."
+            },
+            {
+                question: "Which of the following crosses lipid bilayers the slowest?",
+                options: ["A sodium ion", "A small nonpolar gas", "A hydrocarbon", "A steroid hormone"],
+                correct: "A sodium ion",
+                explanation: "Charged ions require channels to cross bilayers."
+            },
+            {
+                question: "You have just discovered an organism that lives in extremely cold environments. Which of the following would you predict to be TRUE about the phospholipids in its membranes, compared to phospholipids in the membranes of organisms that live in warmer environments?",
+                options: ["More unsaturated hydrocarbon tails", "Longer saturated tails", "Less cholesterol", "Fewer double bonds"],
+                correct: "More unsaturated hydrocarbon tails",
+                explanation: "Unsaturated tails maintain fluidity in cold environments."
+            },
+            {
+                question: "Which of the following factors would tend to increase membrane fluidity?",
+                options: ["More unsaturated phospholipids", "Longer saturated chains", "Higher cholesterol at low temp", "Fewer double bonds"],
+                correct: "More unsaturated phospholipids",
+                explanation: "Double bonds in unsaturated fats increase fluidity."
+            },
+            {
+                question: "At low temperatures, cholesterol increases membrane fluidity and permeability by reducing the extent to which phospholipids pack tightly together.",
+                options: ["True", "False"],
+                correct: "True",
+                explanation: "Cholesterol prevents tight packing at low temperatures."
+            },
+            {
+                question: "Which of the following is TRUE of osmosis?",
+                options: ["Water moves from lower to higher solute concentration, passive transport, diffusion", "It requires energy", "It moves solutes", "It's active transport"],
+                correct: "Water moves from lower to higher solute concentration, passive transport, diffusion",
+                explanation: "Osmosis is the passive diffusion of water."
+            },
+            {
+                question: "Lipid bilayer with long saturated hydrocarbon chains have ______ permeability",
+                options: ["Lower", "Higher", "Unchanged", "Variable"],
+                correct: "Lower",
+                explanation: "Long saturated chains reduce permeability."
+            },
+            {
+                question: "What factors influence the physical properties of the membrane and its permeability?",
+                options: ["Hydrocarbon tail length, saturation, cholesterol presence", "Only temperature", "Protein content only", "Glycerol type"],
+                correct: "Hydrocarbon tail length, saturation, cholesterol presence",
+                explanation: "These factors affect membrane fluidity and permeability."
+            },
+            {
+                question: "___________ stabilizes membrane fluidity across temperature changes",
+                options: ["Cholesterol", "Unsaturated fats", "Proteins", "Carbohydrates"],
+                correct: "Cholesterol",
+                explanation: "Cholesterol buffers fluidity across temperatures."
+            },
+            {
+                question: "Which of the following would likely move through the lipid bilayer of a plasma membrane most rapidly? CO2, Amino acid, Glucose, K+",
+                options: ["CO2", "Amino acid", "Glucose", "K+"],
+                correct: "CO2",
+                explanation: "CO2 is small and nonpolar, allowing rapid diffusion."
+            },
+            {
+                question: "The two types of proteins in the cell membrane are ______ and _____",
+                options: ["Transmembrane/Integral and Peripheral", "Enzymatic and Structural", "Channel and Carrier", "Hydrophilic and Hydrophobic"],
+                correct: "Transmembrane/Integral and Peripheral",
+                explanation: "Integral proteins embed, peripheral attach to the membrane."
+            },
+            {
+                question: "Movement of substances through channel proteins requires energy. True or False",
+                options: ["False", "True"],
+                correct: "False",
+                explanation: "Channel proteins facilitate passive transport."
+            },
+            {
+                question: "For a protein to be an integral membrane protein, it would have to be ________",
+                options: ["Amphipathic with hydrophobic regions", "Fully hydrophilic", "Nonpolar only", "Charged throughout"],
+                correct: "Amphipathic with hydrophobic regions",
+                explanation: "Amphipathic nature allows embedding in the bilayer."
+            },
+            {
+                question: "____________ allows water to move faster across cell membranes",
+                options: ["Aquaporins", "Carrier proteins", "Cholesterol", "Glycolipids"],
+                correct: "Aquaporins",
+                explanation: "Aquaporins are water-specific channels."
+            },
+            {
+                question: "Carrier proteins release their cargo molecules on the side of the membrane that has a _______ concentration of the cargo molecule",
+                options: ["Lower", "Higher", "Equal", "Variable"],
+                correct: "Lower",
+                explanation: "Carrier proteins facilitate diffusion down a gradient."
+            },
+            {
+                question: "Carrier protein exhibits a specificity for a particular type of molecule. True or False",
+                options: ["True", "False"],
+                correct: "True",
+                explanation: "Carrier proteins are molecule-specific."
+            },
+            {
+                question: "In a bacterium, we will find DNA in ________",
+                options: ["The nucleoid", "The nucleus", "Mitochondria", "Chloroplasts"],
+                correct: "The nucleoid",
+                explanation: "Bacteria lack a nucleus; DNA is in the nucleoid."
+            },
+            {
+                question: "In bacteria, cytoskeleton is essential for _________",
+                options: ["Cell division", "Protein synthesis", "Energy storage", "Membrane formation"],
+                correct: "Cell division",
+                explanation: "The cytoskeleton aids in bacterial cell division."
+            },
+            {
+                question: "__________ synthesize proteins in prokaryotic cells",
+                options: ["Ribosomes", "Golgi", "Endoplasmic reticulum", "Lysosomes"],
+                correct: "Ribosomes",
+                explanation: "Ribosomes are the site of protein synthesis."
+            },
+            {
+                question: "Which type of organelle or structure is primarily involved in the synthesis of oils, phospholipids, and steroids?",
+                options: ["Smooth endoplasmic reticulum", "Rough ER", "Golgi", "Mitochondria"],
+                correct: "Smooth endoplasmic reticulum",
+                explanation: "Smooth ER specializes in lipid synthesis."
+            },
+            {
+                question: "Which structure is the site of the synthesis of proteins that may be exported from the cell?",
+                options: ["Rough endoplasmic reticulum", "Smooth ER", "Free ribosomes", "Nucleus"],
+                correct: "Rough endoplasmic reticulum",
+                explanation: "Rough ER has ribosomes for export protein synthesis."
+            },
+            {
+                question: "_______ produces and modifies polysaccharides that will be secreted in the cell",
+                options: ["Golgi apparatus", "Endoplasmic reticulum", "Lysosomes", "Peroxisomes"],
+                correct: "Golgi apparatus",
+                explanation: "The Golgi modifies and packages polysaccharides."
+            },
+            {
+                question: "Thylakoids, DNA, and ribosomes are all components found in ________",
+                options: ["Chloroplasts", "Mitochondria", "Nucleus", "Lysosomes"],
+                correct: "Chloroplasts",
+                explanation: "Chloroplasts contain these for photosynthesis."
+            },
+            {
+                question: "Which organelle is the primary site of ATP synthesis in eukaryotic cells?",
+                options: ["Mitochondria", "Chloroplasts", "Golgi", "Endoplasmic reticulum"],
+                correct: "Mitochondria",
+                explanation: "Mitochondria produce ATP via cellular respiration."
+            },
+            {
+                question: "In a plant cell, DNA may be found ________",
+                options: ["In the nucleus, mitochondria, and chloroplasts", "Only in the nucleus", "In the cytoplasm", "In the cell wall"],
+                correct: "In the nucleus, mitochondria, and chloroplasts",
+                explanation: "Plant cells have DNA in multiple organelles."
+            },
+            {
+                question: "Which of the following types of molecules are the major structural components of the cell membrane?",
+                options: ["Phospholipids and proteins", "Carbohydrates and steroids", "Nucleic acids and proteins", "Triglycerides and cholesterol"],
+                correct: "Phospholipids and proteins",
+                explanation: "Phospholipids form the bilayer, proteins add functionality."
+            },
+            {
+                question: "Which of the following cross lipid bilayers the fastest?",
+                options: ["A small, nonpolar molecule like oxygen (O2)", "A large polar molecule", "A charged ion", "A protein"],
+                correct: "A small, nonpolar molecule like oxygen (O2)",
+                explanation: "Nonpolar molecules like O2 diffuse rapidly."
+            },
+            {
+                question: "Which of the following is a characteristic feature of a carrier protein in a plasma membrane?",
+                options: ["Exhibits specificity for a particular molecule", "Requires energy for all transport", "Forms open channels", "Is always peripheral"],
+                correct: "Exhibits specificity for a particular molecule",
+                explanation: "Carrier proteins are specific to their substrates."
+            },
+            {
+                question: "Where would you most likely find an integral membrane protein?",
+                options: ["Spanning the cell membrane, visible inside and outside", "Only on the cytoplasmic side", "Floating in the cytoplasm", "In the nucleus"],
+                correct: "Spanning the cell membrane, visible inside and outside",
+                explanation: "Integral proteins span the bilayer."
+            },
+            {
+                question: "Which of these best reflects the following relationship: monosaccharide versus polysaccharide?",
+                options: ["Glucose versus glycogen", "Glucose versus fructose", "Starch versus cellulose", "Glycogen versus chitin"],
+                correct: "Glucose versus glycogen",
+                explanation: "Glucose is a monosaccharide; glycogen is a polysaccharide."
+            },
+            {
+                question: "All of the following are part of a prokaryotic cell EXCEPT _______.",
+                options: ["Endoplasmic reticulum", "Ribosomes", "Plasma membrane", "Cytoplasm"],
+                correct: "Endoplasmic reticulum",
+                explanation: "Prokaryotes lack membrane-bound organelles like ER."
+            },
+            {
+                question: "Large numbers of ribosomes are present in cells that specialize in producing which of the following macromolecules?",
+                options: ["Proteins", "Lipids", "Carbohydrates", "Nucleic acids"],
+                correct: "Proteins",
+                explanation: "Ribosomes are the site of protein synthesis."
+            },
+            {
+                question: "Which of the following cellular structures is present in a prokaryotic cell?",
+                options: ["Pili", "Mitochondria", "Golgi apparatus", "Nuclear envelope"],
+                correct: "Pili",
+                explanation: "Pili are found in prokaryotes for attachment."
+            },
+            {
+                question: "Which of the following cellular structures is NOT found in a prokaryote?",
+                options: ["Nuclear envelope", "Ribosomes", "DNA", "Cytoskeleton"],
+                correct: "Nuclear envelope",
+                explanation: "Prokaryotes lack a nuclear envelope."
+            },
+            {
+                question: "The evolution of eukaryotic cells most likely involved ________",
+                options: ["Endosymbiosis of an aerobic bacterium", "Direct polymerization", "Viral infection", "Spontaneous assembly"],
+                correct: "Endosymbiosis of an aerobic bacterium",
+                explanation: "Endosymbiosis led to mitochondria in eukaryotes."
+            },
+            {
+                question: "The Golgi apparatus has a polarity, or sidedness, to its structure and function. Which of the following statements correctly describes this polarity?",
+                options: [
+                    "Lipids in the membrane of the Golgi are sorted and modified as they move.",
+                    "Soluble proteins in the cisternae are sorted and modified.",
+                    "Transport vesicles fuse with one side and leave from the opposite.",
+                    "Proteins in the membrane of the Golgi are sorted and modified.",
+                    "All of the listed responses correctly describe polarity characteristics."
+                ],
+                correct: "All of the listed responses correctly describe polarity characteristics.",
+                explanation: "The Golgi's polarity involves sorting and modification at cis and trans faces."
+            },
+            {
+                question: "Which of the following cellular structures contain hydrolytic enzymes?",
+                options: ["Lysosomes", "Ribosomes", "Endoplasmic reticulum", "Nucleus"],
+                correct: "Lysosomes",
+                explanation: "Lysosomes contain hydrolytic enzymes for digestion."
+            },
+            {
+                question: "Which organelle in a plant cell contains its own DNA and ribosomes?",
+                options: ["Chloroplasts", "Golgi apparatus", "Vacuole", "Peroxisome"],
+                correct: "Chloroplasts",
+                explanation: "Chloroplasts have their own DNA and ribosomes."
+            },
+            {
+                question: "Which structure is common to plant and animal cells?",
+                options: ["Mitochondrion", "Cell wall", "Chloroplasts", "Central vacuole"],
+                correct: "Mitochondrion",
+                explanation: "Both plant and animal cells have mitochondria."
+            },
+            {
+                question: "Why is the smooth endoplasmic reticulum unable to synthesize proteins?",
+                options: ["No ribosomes are attached to its surface", "It lacks DNA", "It only synthesizes lipids", "It is too smooth"],
+                correct: "No ribosomes are attached to its surface",
+                explanation: "Smooth ER lacks ribosomes, unlike rough ER."
+            },
+            {
+                question: "Which of the following is a major difference between prokaryotic cells and eukaryotic cells?",
+                options: [
+                    "Eukaryotic cells have membrane-bound organelles, while prokaryotic cells do not",
+                    "Prokaryotes have a nucleus",
+                    "Eukaryotes lack DNA",
+                    "Prokaryotes are larger"
+                ],
+                correct: "Eukaryotic cells have membrane-bound organelles, while prokaryotic cells do not",
+                explanation: "Eukaryotic cells have more intracellular organelles than prokaryotes, including membrane-bound structures like the nucleus and ER."
+            },
+            {
+                question: "What can you infer about a high-molecular-weight protein that cannot be transported into the nucleus?",
+                options: [
+                    "It lacks a nuclear localization signal (NLS)",
+                    "It is too small",
+                    "It has too many signals",
+                    "It is a lipid"
+                ],
+                correct: "It lacks a nuclear localization signal (NLS)",
+                explanation: "A nuclear localization signal (NLS) is required for proteins to be transported into the nucleus."
+            },
+            {
+                question: "A larger than regular proportion of smooth endoplasmic reticulum would be present in cells that specialize in producing which of the following molecules?",
+                options: [
+                    "Lipids, phospholipids, and steroids",
+                    "Proteins",
+                    "Carbohydrates",
+                    "Nucleic acids"
+                ],
+                correct: "Lipids, phospholipids, and steroids",
+                explanation: "Smooth endoplasmic reticulum is specialized for the synthesis of lipids, including phospholipids and steroids."
+            },
+            {
+                question: "Which animal cell organelle contains enzymes that transfer hydrogen from various substrates to oxygen?",
+                options: [
+                    "Peroxisome",
+                    "Lysosome",
+                    "Mitochondria",
+                    "Golgi apparatus"
+                ],
+                correct: "Peroxisome",
+                explanation: "The peroxisome contains enzymes that transfer hydrogen from various substrates to oxygen, producing hydrogen peroxide as a byproduct."
+            },
+            {
+                question: "Suppose a young boy is always tired and fatigued, suffering from a metabolic disease. Which organelles is most likely involved in this disease?",
+                options: [
+                    "Mitochondria",
+                    "Lysosomes",
+                    "Golgi apparatus",
+                    "Endoplasmic reticulum"
+                ],
+                correct: "Mitochondria",
+                explanation: "Mitochondria are the primary site of ATP production, and dysfunction can lead to fatigue and metabolic issues."
+            },
+            {
+                question: "A cell with an extensive area of smooth endoplasmic reticulum is specialized to ________.",
+                options: [
+                    "Synthesize large quantities of lipids",
+                    "Produce proteins for export",
+                    "Store genetic information",
+                    "Break down toxins"
+                ],
+                correct: "Synthesize large quantities of lipids",
+                explanation: "Smooth endoplasmic reticulum is specialized for lipid synthesis."
+            },
+            {
+                question: "Which macromolecule leaves the nucleus of a eukaryotic cell through pores in the nuclear membrane?",
+                options: [
+                    "mRNA",
+                    "DNA",
+                    "Proteins",
+                    "Lipids"
+                ],
+                correct: "mRNA",
+                explanation: "mRNA is transcribed in the nucleus and exits through nuclear pores to be translated in the cytoplasm."
+            },
+            {
+                question: "Lysosomes are considered to be part of the endomembrane system because they",
+                options: [
+                    "Are formed from products synthesized by the endoplasmic reticulum and processed by the Golgi",
+                    "Contain DNA",
+                    "Are free-floating in the cytoplasm",
+                    "Synthesize lipids"
+                ],
+                correct: "Are formed from products synthesized by the endoplasmic reticulum and processed by the Golgi",
+                explanation: "Lysosomes are derived from the endomembrane system, involving the ER and Golgi."
+            },
+            {
+                question: "What is the most likely pathway taken by a newly synthesized protein that will be secreted by a cell?",
+                options: [
+                    "ER → Golgi → vesicles that fuse with plasma membrane",
+                    "Nucleus → ER → cytoplasm",
+                    "Golgi → lysosomes → plasma membrane",
+                    "Mitochondria → vesicles → plasma membrane"
+                ],
+                correct: "ER → Golgi → vesicles that fuse with plasma membrane",
+                explanation: "Secretory proteins are synthesized in the ER, modified in the Golgi, and secreted via vesicles."
+            },
+            {
+                question: "Which of the following best describes the role of the rough endoplasmic reticulum in protein synthesis?",
+                options: [
+                    "It synthesizes proteins destined for secretion or membrane insertion",
+                    "It degrades damaged proteins",
+                    "It synthesizes lipids",
+                    "It stores calcium ions"
+                ],
+                correct: "It synthesizes proteins destined for secretion or membrane insertion",
+                explanation: "The rough ER, studded with ribosomes, synthesizes proteins that are secreted or integrated into membranes."
+            },
+            {
+                question: "What is the primary function of the central vacuole in plant cells?",
+                options: [
+                    "Storage of nutrients and waste, and maintaining turgor pressure",
+                    "Synthesis of ATP",
+                    "Protein synthesis",
+                    "Lipid degradation"
+                ],
+                correct: "Storage of nutrients and waste, and maintaining turgor pressure",
+                explanation: "The central vacuole stores materials and helps maintain cell turgor."
+            },
+            {
+                question: "Which of the following molecules is primarily responsible for the fluidity of the plasma membrane?",
+                options: [
+                    "Phospholipids",
+                    "Cholesterol",
+                    "Integral proteins",
+                    "Carbohydrates"
+                ],
+                correct: "Phospholipids",
+                explanation: "Phospholipids’ amphipathic nature and fatty acid composition determine membrane fluidity."
+            }
+        ];
+
+        let questions = [...originalQuestions];
+        questions.sort(() => Math.random() - 0.5);
+
+        questions = questions.map(q => {
+            const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+            const correctIndex = shuffledOptions.indexOf(q.correct);
+            return {
+                ...q,
+                shuffledOptions,
+                correctIndex
+            };
+        });
+
+        let currentIndex = 0;
+        let userAnswers = new Array(questions.length).fill(-1);
+        let locked = new Array(questions.length).fill(false);
+
+        function displayScore() {
+            let correctCount = 0;
+            userAnswers.forEach((ans, i) => {
+                if (ans === questions[i].correctIndex) correctCount++;
+            });
+            const percentage = (correctCount / questions.length * 100).toFixed(2);
+            document.getElementById('score').innerHTML = `${correctCount} out of ${questions.length} correct (${percentage}%)`;
+        }
+
+        function displayQuestion() {
+            const q = questions[currentIndex];
+            let html = `<h2>Question ${currentIndex + 1} of ${questions.length}</h2>`;
+            html += `<p>${q.question}</p>`;
+            q.shuffledOptions.forEach((opt, i) => {
+                html += `
+                    <div class="option">
+                        <input type="radio" id="opt${i}" name="answer" value="${i}" ${userAnswers[currentIndex] === i ? 'checked' : ''} ${locked[currentIndex] ? 'disabled' : ''}>
+                        <label for="opt${i}" id="label${i}">${opt}</label>
+                    </div>
+                `;
+            });
+            document.getElementById('question-display').innerHTML = html;
+
+            if (locked[currentIndex] && userAnswers[currentIndex] !== -1) {
+                const selectedLabel = document.getElementById(`label${userAnswers[currentIndex]}`);
+                if (userAnswers[currentIndex] === q.correctIndex) {
+                    selectedLabel.classList.add('correct');
+                } else {
+                    selectedLabel.classList.add('incorrect');
+                }
+            }
+
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').disabled = currentIndex === questions.length - 1;
+            document.getElementById('submit-btn').disabled = false;
+            displayScore();
+        }
+
+        function checkAnswer() {
+            const selected = document.querySelector('input[name="answer"]:checked');
+            if (!selected) return;
+            const selectedIndex = parseInt(selected.value);
+            userAnswers[currentIndex] = selectedIndex;
+            locked[currentIndex] = true;
+            displayQuestion();
+        }
+
+        function nextQuestion() {
+            checkAnswer();
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                displayQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                displayQuestion();
+            }
+        }
+
+        function submitExam() {
+            let correctCount = 0;
+            userAnswers.forEach((ans, i) => {
+                if (ans === questions[i].correctIndex) correctCount++;
+            });
+            const percentage = (correctCount / questions.length * 100).toFixed(2);
+            document.getElementById('score').innerHTML = `${correctCount} out of ${questions.length} correct (${percentage}%)`;
+
+            let resultsHtml = '';
+            questions.forEach((q, i) => {
+                const userAns = userAnswers[i] !== -1 ? q.shuffledOptions[userAnswers[i]] : 'Not answered';
+                const correctAns = q.correct;
+                const className = userAnswers[i] === q.correctIndex ? 'correct' : 'incorrect';
+                resultsHtml += `
+                    <div class="result-item">
+                        <h3>Question ${i + 1}: ${q.question}</h3>
+                        <p>Your answer: <span class="${className}">${userAns}</span></p>
+                        <p>Correct answer: ${correctAns}</p>
+                        <p>Explanation: ${q.explanation}</p>
+                    </div>
+                `;
+            });
+            document.getElementById('results-list').innerHTML = resultsHtml;
+
+            document.getElementById('exam-container').style.display = 'none';
+            document.getElementById('results-container').style.display = 'block';
+        }
+
+        displayQuestion();
+    </script>
+</body>
+</html>
