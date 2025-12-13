@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Guide Exam: Chapters 9, 12, and 13</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a56d4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gray-100: #f8fafc;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --radius: 12px;
+            --transition: all 0.2s ease;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+            background:linear-gradient(135deg,#f0f4ff 0%,#e6f0ff 100%);
+            color:var(--gray-800);
+            line-height:1.6;
+            min-height:100vh;
+            padding:20px;
+        }
+        .container{max-width:900px;margin:0 auto;}
+        h1{
+            text-align:center;
+            font-size:2.5rem;
+            font-weight:700;
+            margin-bottom:.5rem;
+            background:linear-gradient(90deg,var(--primary),#5b7eff);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            background-clip:text;
+        }
+        .subtitle{
+            text-align:center;
+            color:var(--gray-600);
+            margin-bottom:2rem;
+            font-size:1.1rem;
+        }
+        /* Mode Tabs */
+        .mode-tabs{
+            display:flex;
+            justify-content:center;
+            background:white;
+            border-radius:var(--radius);
+            padding:6px;
+            box-shadow:var(--shadow-sm);
+            margin-bottom:2rem;
+            gap:8px;
+        }
+        .mode-tab{
+            flex:1;
+            padding:12px 16px;
+            font-weight:600;
+            font-size:.95rem;
+            border-radius:10px;
+            cursor:pointer;
+            transition:var(--transition);
+            text-align:center;
+            color:var(--gray-600);
+        }
+        .mode-tab.active{
+            background:var(--primary);
+            color:white;
+            box-shadow:var(--shadow-md);
+            transform:translateY(-2px);
+        }
+        .mode-tab:hover:not(.active){
+            background:var(--gray-100);
+            color:var(--gray-800);
+        }
+        .mode-tab.warmup{background:linear-gradient(90deg,#facc15,#f97316);color:white;}
+        .mode-tab.warmup.active{background:linear-gradient(90deg,#f97316,#facc15);box-shadow:0 0 15px rgba(249,115,22,.4);}
+        .mode-tab.challenging{background:linear-gradient(90deg,#dc2626,#f97316);color:white;}
+        .mode-tab.challenging.active{background:linear-gradient(90deg,#b91c1c,#dc2626);box-shadow:0 0 15px rgba(220,38,38,.4);}
+        /* Exam */
+        #exam-container{
+            background:white;
+            border-radius:var(--radius);
+            padding:2rem;
+            box-shadow:var(--shadow-lg);
+            margin-bottom:2rem;
+        }
+        #results-container{
+            display:none;
+            background:white;
+            border-radius:var(--radius);
+            padding:2rem;
+            box-shadow:var(--shadow-lg);
+        }
+        .question-header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:1rem;
+            padding-bottom:.75rem;
+            border-bottom:1px solid var(--gray-200);
+        }
+        .question-number{
+            font-weight:600;
+            color:var(--primary);
+            font-size:1.1rem;
+        }
+        .question{
+            margin-bottom:1.5rem;
+            padding:1.25rem;
+            background:var(--gray-100);
+            border-radius:10px;
+            border-left:4px solid var(--primary);
+        }
+        .question p{
+            font-size:1.1rem;
+            margin-bottom:1rem;
+            color:var(--gray-800);
+        }
+        .option{
+            margin:12px 0;
+            position:relative;
+            padding-left:2.5rem;
+            cursor:pointer;
+        }
+        .option input{
+            position:absolute;
+            opacity:0;
+            cursor:pointer;
+            height:0;
+            width:0;
+        }
+        .option label{
+            display:block;
+            padding:14px 16px;
+            background:white;
+            border:2px solid var(--gray-300);
+            border-radius:10px;
+            transition:var(--transition);
+            font-weight:500;
+            position:relative;
+        }
+        .option label::before{
+            content:'';
+            position:absolute;
+            left:-2.2rem;
+            top:50%;
+            transform:translateY(-50%);
+            width:20px;
+            height:20px;
+            border:2px solid var(--gray-300);
+            border-radius:50%;
+            background:white;
+            transition:var(--transition);
+        }
+        .option input:checked~label{
+            border-color:var(--primary);
+            background:#ebf3ff;
+            box-shadow:0 0 0 3px rgba(67,97,238,.15);
+        }
+        .option input:checked~label::before{
+            background:var(--primary);
+            border-color:var(--primary);
+        }
+        .option input:checked~label::after{
+            content:'';
+            position:absolute;
+            left:-1.7rem;
+            top:50%;
+            transform:translateY(-50%);
+            width:8px;
+            height:8px;
+            background:white;
+            border-radius:50%;
+        }
+        .option input:disabled~label{
+            opacity:.6;
+            cursor:not-allowed;
+            background:var(--gray-100);
+        }
+        .option.correct label{
+            border-color:var(--success)!important;
+            background:#d4f7e8!important;
+            font-weight:600;
+            box-shadow:0 0 0 3px rgba(16,185,129,.15);
+        }
+        .option.incorrect label{
+            border-color:var(--danger)!important;
+            background:#fee2e2!important;
+            font-weight:600;
+            box-shadow:0 0 0 3px rgba(239,68,68,.15);
+        }
+        .buttons{
+            display:flex;
+            justify-content:center;
+            gap:12px;
+            margin-top:2rem;
+            flex-wrap:wrap;
+        }
+        button{
+            padding:12px 24px;
+            font-size:1rem;
+            font-weight:600;
+            border:none;
+            border-radius:10px;
+            cursor:pointer;
+            transition:var(--transition);
+            min-width:120px;
+        }
+        #prev-btn,#next-btn{
+            background:var(--gray-200);
+            color:var(--gray-800);
+        }
+        #prev-btn:hover,#next-btn:hover{
+            background:var(--gray-300);
+            transform:translateY(-1px);
+        }
+        #check-btn{
+            background:var(--warning);
+            color:white;
+        }
+        #check-btn:hover{
+            background:#f97316;
+            transform:translateY(-1px);
+            box-shadow:var(--shadow-md);
+        }
+        #submit-btn{
+            background:var(--success);
+            color:white;
+            font-weight:700;
+        }
+        #submit-btn:hover{
+            background:#059669;
+            transform:translateY(-1px);
+            box-shadow:var(--shadow-md);
+        }
+        button:disabled{
+            opacity:.6;
+            cursor:not-allowed;
+            transform:none!important;
+        }
+        #score{
+            font-size:3rem;
+            text-align:center;
+            margin:1.5rem 0;
+            font-weight:700;
+            background:linear-gradient(90deg,var(--success),#34d399);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            background-clip:text;
+        }
+        .result-item{
+            margin-bottom:1.5rem;
+            padding:1.25rem;
+            background:var(--gray-100);
+            border-radius:10px;
+            border-left:4px solid var(--primary);
+        }
+        .result-item h3{color:var(--primary);margin-bottom:.75rem;font-size:1.1rem;}
+        .result-item p{margin:.5rem 0;font-size:.95rem;}
+        .result-item .correct{color:var(--success);font-weight:600;}
+        .result-item .incorrect{color:var(--danger);font-weight:600;}
+        @media (max-width:768px){
+            .mode-tabs{flex-direction:column;}
+            .mode-tab{margin:4px 0;}
+            .buttons{flex-direction:column;}
+            button{width:100%;}
+            h1{font-size:2rem;}
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Study Guide Exam</h1>
+    <p class="subtitle">Master Chapters 9, 12, and 13 with interactive practice</p>
+    <div class="mode-tabs">
+        <div id="normal-tab" class="mode-tab active">Normal Mode</div>
+        <div id="challenging-tab" class="mode-tab challenging">Challenging Mode</div>
+        <div id="warmup-tab" class="mode-tab warmup">Warm-Up (10 Qs)</div>
+    </div>
+    <div id="exam-container">
+        <div id="question-display"></div>
+        <div class="buttons">
+            <button id="prev-btn">Previous</button>
+            <button id="check-btn">Check Answer</button>
+            <button id="next-btn">Next</button>
+            <button id="submit-btn">Submit Exam</button>
+        </div>
+    </div>
+    <div id="results-container">
+        <div id="score"></div>
+        <div id="results-list"></div>
+    </div>
+</div>
+<script>
+/* ==================== QUESTIONS ==================== */
+const originalQuestions = [
+    { question: "________ is a product of glycolysis, pyruvate processing, and the citric acid cycle", options: ["NADH", "ATP", "FADH2", "CO2"], correct: "NADH", explanation: "NADH is produced in all three stages." },
+    { question: "The glucose molecule has a large quantity of energy in its ________", options: ["C—H Bonds", "C—O Bonds", "O—H Bonds", "C—C Bonds"], correct: "C—H Bonds", explanation: "High-energy C-H bonds store potential energy." },
+    { question: "What is the term for metabolic pathways that release stored energy by breaking down complex molecules?", options: ["Catabolic Pathways", "Anabolic Pathways", "Amphibolic Pathways", "Synthetic Pathways"], correct: "Catabolic Pathways", explanation: "Catabolism breaks down molecules to release energy." },
+    { question: "Describes the results of the following reaction C6H12O6 + 6O2 → 6 CO2 + 6 H2O + Energy", options: ["C6H12O6 is oxidized and O2 is reduced", "C6H12O6 is reduced and O2 is oxidized", "Both are oxidized", "Both are reduced"], correct: "C6H12O6 is oxidized and O2 is reduced", explanation: "Glucose loses electrons (oxidized); oxygen gains them (reduced)." },
+    { question: "What is the major adaptive advantage of cellular respiration?", options: ["produce adenosine triphosphate (ATP)", "produce CO2", "produce water", "consume glucose"], correct: "produce adenosine triphosphate (ATP)", explanation: "ATP is the universal energy currency." },
+    { question: "In which subcellular location does glycolysis occur in prokaryotic and eukaryotic cells?", options: ["Cytosol/Cytoplasm", "Mitochondrial matrix", "Nucleus", "Endoplasmic reticulum"], correct: "Cytosol/Cytoplasm", explanation: "Glycolysis is cytosolic in all cells." },
+    { question: "What are the end products of glycolysis?", options: ["two NADH, two ATP, two Pyruvate", "two FADH2, four ATP, two lactate", "one NADH, one ATP, one pyruvate", "two CO2, two ATP, two acetyl CoA"], correct: "two NADH, two ATP, two Pyruvate", explanation: "Net yield per glucose: 2 ATP, 2 NADH, 2 pyruvate." },
+    { question: "In glycolysis, for each molecule of glucose oxidized to pyruvate ________", options: ["2 molecules of ATP are used and 4 molecules of ATP are produced", "4 molecules of ATP are used and 2 are produced", "No ATP is used or produced", "2 molecules of ATP are produced only"], correct: "2 molecules of ATP are used and 4 molecules of ATP are produced", explanation: "Investment: 2 ATP; payoff: 4 ATP; net +2." },
+    { question: "During glycolysis, when each molecule of glucose is catabolized to two molecules of pyruvate, most of the potential energy contained in glucose is ________", options: ["retained in the two pyruvates", "released as heat", "transferred to ATP", "lost as CO2"], correct: "retained in the two pyruvates", explanation: "Pyruvate still holds most energy for later stages." },
+    { question: "Why is glycolysis described as having an investment phase and a payoff phase?", options: ["It uses stored ATP and then forms a net increase in ATP", "It produces ATP then consumes it", "It only produces ATP", "It only consumes ATP"], correct: "It uses stored ATP and then forms a net increase in ATP", explanation: "Early steps consume ATP; later steps produce more." },
+    { question: "During cellular respiration, acetyl CoA accumulates in which location?", options: ["mitochondrial matrix", "cytosol", "intermembrane space", "inner membrane"], correct: "mitochondrial matrix", explanation: "Acetyl CoA enters the citric acid cycle in the matrix." },
+    { question: "Pyruvate dehydrogenase activity would be at its lowest when ________.", options: ["Pyruvate dehydrogenase is phosphorylated", "glucose is abundant", "oxygen is low", "pyruvate is low"], correct: "Pyruvate dehydrogenase is phosphorylated", explanation: "High energy signals inhibit PDH." },
+    { question: "Which process does not occur within the mitochondrion in a eukaryotic cell?", options: ["Glycolysis", "Citric acid cycle", "Oxidative phosphorylation", "Pyruvate oxidation"], correct: "Glycolysis", explanation: "Glycolysis is cytosolic." },
+    { question: "Following glycolysis and the citric acid cycle, but before the electron transport chain and oxidative phosphorylation, the carbon skeleton of glucose has been broken down to CO2 with some net gain of ATP. Most of the energy from the original glucose molecule at that point in the process, is in the form of ________", options: ["NADH", "ATP", "FADH2", "pyruvate"], correct: "NADH", explanation: "NADH carries most energy to ETC." },
+    { question: "Which electron carrier(s) function in the citric acid cycle?", options: ["NADH and FADH2", "Only NADH", "Only FADH2", "Only ATP"], correct: "NADH and FADH2", explanation: "Both are produced in the cycle." },
+    { question: "When a glucose molecule loses a hydrogen atom as the result of an oxidation-reduction reaction, the molecule becomes _______", options: ["oxidized", "reduced", "phosphorylated", "dephosphorylated"], correct: "oxidized", explanation: "Loss of H (electrons) = oxidation." },
+    { question: "Citric acid cycle reaction rates are low when ____ or _____ are abundant", options: ["ATP and NADH", "glucose and pyruvate", "O2 and CO2", "FADH2 and ATP"], correct: "ATP and NADH", explanation: "High energy inhibits the cycle." },
+    { question: "The production of ATP using the process of chemiosmosis is called", options: ["oxidative phosphorylation", "substrate-level phosphorylation", "photophosphorylation", "fermentation"], correct: "oxidative phosphorylation", explanation: "ATP synthesis via proton gradient." },
+    { question: "C6H12O6 (glucose) + 6 O2 → 6 CO2 + 6 H2O. Where is most of the water in this reaction produced?", options: ["In the electron transport chain", "In glycolysis", "In the citric acid cycle", "In fermentation"], correct: "In the electron transport chain", explanation: "O2 + 4H+ + 4e- → 2H2O at complex IV." },
+    { question: "Where is oxygen gas consumed in the above reaction?", options: ["In the electron transport chain", "In glycolysis", "In the citric acid cycle", "In pyruvate oxidation"], correct: "In the electron transport chain", explanation: "Terminal electron acceptor." },
+    { question: "Energy released by the electron transport chain is used to pump H+ into which location in eukaryotic cells?", options: ["mitochondrial intermembrane space", "mitochondrial matrix", "cytosol", "nucleus"], correct: "mitochondrial intermembrane space", explanation: "Creates proton gradient." },
+    { question: "The final electron acceptor of the electron transport chain that functions in aerobic oxidative phosphorylation is ________.", options: ["oxygen", "NAD+", "FAD", "cytochrome c"], correct: "oxygen", explanation: "O2 accepts electrons to form water." },
+    { question: "Why are fermentation reactions important for cells?", options: ["They regenerate NAD+ so that glycolysis can continue to operate", "They produce ATP directly", "They consume oxygen", "They produce CO2"], correct: "They regenerate NAD+ so that glycolysis can continue to operate", explanation: "NAD+ recycling sustains glycolysis." },
+    { question: "Which metabolic pathway is common to both cellular respiration and fermentation?", options: ["Glycolysis", "Citric acid cycle", "Electron transport chain", "Pyruvate oxidation"], correct: "Glycolysis", explanation: "Shared initial pathway." },
+    { question: "The ATP made during fermentation is generated by ________", options: ["substrate-level phosphorylation", "oxidative phosphorylation", "photophosphorylation", "chemiosmosis"], correct: "substrate-level phosphorylation", explanation: "Direct enzyme-catalyzed transfer." },
+    { question: "In the absence of oxygen, yeast cells can obtain energy by fermentation, resulting in the production of ________.", options: ["ATP, CO2, and ethanol.", "ATP, lactate", "ATP, CO2, lactate", "Only ATP"], correct: "ATP, CO2, and ethanol.", explanation: "Alcoholic fermentation products." },
+    { question: "In addition to ATP, what are the end products of glycolysis", options: ["Pyruvate and NADH", "Lactate and NAD+", "Ethanol and CO2", "Acetyl CoA and CO2"], correct: "Pyruvate and NADH", explanation: "2 pyruvate + 2 NADH per glucose." },
+    { question: "In eukaryotic cells, chromosomes are composed of _______", options: ["DNA and proteins", "Only DNA", "RNA and proteins", "Lipids and DNA"], correct: "DNA and proteins", explanation: "Chromatin = DNA + histones." },
+    { question: "A cell has 6 unreplicated chromosomes. How many replicated chromosomes does the cell have after S phase of interphase?", options: ["6", "12", "3", "18"], correct: "6", explanation: "Replication produces 6 replicated chromosomes (12 chromatids)." },
+    { question: "The first gap in the cell cycle (G1) corresponds to ________", options: ["normal growth and cell function", "DNA replication", "chromosome segregation", "cytokinesis"], correct: "normal growth and cell function", explanation: "G1 is growth phase." },
+    { question: "Before mitosis begins, chromosomes are attached only at the centromere", options: ["True", "False"], correct: "True", explanation: "Sister chromatids joined at centromere." },
+    { question: "A cell begins G1 phase with 6 unreplicated chromosomes. This cell undergoes S, G2, and M phases. How many chromosomes will the daughter cells contain?", options: ["6", "12", "3", "18"], correct: "6", explanation: "Mitosis produces two identical 6-chromosome cells." },
+    { question: "A cell near the end of anaphase of mitosis will have ________", options: ["no chromosomes in the center of the cell", "chromosomes aligned at the equator", "condensed chromosomes only", "decondensed chromosomes"], correct: "no chromosomes in the center of the cell", explanation: "Chromosomes pulled to poles." },
+    { question: "At which phase are centrioles beginning to move apart in animal cells?", options: ["Prophase", "Metaphase", "Anaphase", "Telophase"], correct: "Prophase", explanation: "Centrosomes separate in prophase." },
+    { question: "The microtubule-organizing center found in animal cells is an identifiable structure present during all phases of the cell cycle. Specifically, it is known as the ________", options: ["centrosome", "centriole", "kinetochore", "spindle"], correct: "centrosome", explanation: "Contains centrioles; organizes microtubules." },
+    { question: "Kinetochore microtubules assist in the process of splitting centromeres by ________", options: ["creating tension by pulling toward opposite poles of the cell", "shortening only", "elongating only", "dissolving centromeres"], correct: "creating tension by pulling toward opposite poles of the cell", explanation: "Poleward pull separates chromatids." },
+    { question: "Mitosis separates chromosomes. The cytoplasm is divided between two daughter cells through the process of ________", options: ["cytokinesis", "karyokinesis", "interphase", "binary fission"], correct: "cytokinesis", explanation: "Cytoplasmic division." },
+    { question: "_____ are primarily responsible for cytokinesis in plant cells but not in animal cells", options: ["Golgi-derived vesicles / Golgi Apparatus", "Actin filaments", "Centrioles", "Microtubules"], correct: "Golgi-derived vesicles / Golgi Apparatus", explanation: "Form cell plate." },
+    { question: "Once a cell completes mitosis, molecular division triggers must be turned off. What happens to MPF during mitosis?", options: ["The cyclin component of MPF is degraded.", "MPF is activated", "Cdk is synthesized", "Cyclin increases"], correct: "The cyclin component of MPF is degraded.", explanation: "Cyclin degradation inactivates MPF." },
+    { question: "The MPF protein complex turns itself off by _____", options: ["activating a process that destroys cyclin components", "synthesizing more Cdk", "inhibiting phosphatase", "phosphorylating itself"], correct: "activating a process that destroys cyclin components", explanation: "Auto-regulatory degradation." },
+    { question: "The decline of MPF activity at the end of mitosis is due to ________", options: ["degradation of cyclin", "synthesis of cyclin", "activation of Cdk", "dephosphorylation of Cdk"], correct: "degradation of cyclin", explanation: "Cyclin must be destroyed." },
+    { question: "The cyclin dependent component of MPF gets destroyed at the end of ________. The cell is unable to transition to ________ unless this happens", options: ["M, G1", "G2, M", "S, G2", "G1, S"], correct: "M, G1", explanation: "Cyclin B degraded at M exit." },
+    { question: "The product of the p53 gene ________", options: ["inhibits the cell cycle", "promotes the cell cycle", "synthesizes DNA", "degrades DNA"], correct: "inhibits the cell cycle", explanation: "Tumor suppressor; halts cycle on damage." },
+    { question: "Regulatory proteins that prevent a cell from entering the S phase under conditions of DNA damage are also known as ________", options: ["t, tumor suppressors", "oncogenes", "growth factors", "cyclins"], correct: "tumor suppressors", explanation: "Block cycle progression." },
+    { question: "If a non-cancerous cell has accumulated DNA damage, it is unlikely to __", options: ["pass the G2 checkpoint", "pass the G1 checkpoint", "enter mitosis", "complete cytokinesis"], correct: "pass the G2 checkpoint", explanation: "G2/M checkpoint detects damage." },
+    { question: "______________would be used to differentiate between benign and malignant tumors", options: ["The ability to invade other tissues", "Size only", "Color", "Location"], correct: "The ability to invade other tissues", explanation: "Malignancy = invasion/metastasis." },
+    { question: "_____________would occur if the Rb protein was inactivated.", options: ["S phase would be activated in the absence of growth factors", "G1 arrest", "M phase entry", "Apoptosis"], correct: "S phase would be activated in the absence of growth factors", explanation: "Rb normally blocks S phase." },
+    { question: "Ras protein found in tumors would cause _________", options: ["excessive cell division", "cell cycle arrest", "differentiation", "apoptosis"], correct: "excessive cell division", explanation: "Oncogenic Ras hyperactivates signaling." },
+    { question: "Cyclin-dependent kinase (Cdk) is ________.", options: ["an enzyme that attaches phosphate groups to other proteins.", "a transcription factor", "a growth factor", "a receptor"], correct: "an enzyme that attaches phosphate groups to other proteins.", explanation: "Kinase phosphorylates targets." },
+    { question: "Neurons and some other specialized cells divide infrequently because they ________.", options: ["have entered into G0", "lack cyclins", "have no DNA", "are in S phase"], correct: "have entered into G0", explanation: "Quiescent non-dividing state." },
+    { question: "In human and many other eukaryotic species' cells, the nuclear membrane has to disappear to permit ________.", options: ["the attachment of microtubules to kinetochores", "DNA replication", "cytokinesis", "organelle division"], correct: "the attachment of microtubules to kinetochores", explanation: "Nuclear envelope breakdown in prophase." },
+    { question: "Proteins that are involved in the regulation of the cell cycle and that show fluctuations in concentration during the cell cycle are called ________.", options: ["cyclins", "Cdks", "Rb proteins", "p53"], correct: "cyclins", explanation: "Levels oscillate." },
+    { question: "Which cytoskeletal proteins are important constituents of the contractile structures that form the cleavage furrows involved in animal cell cytokinesis?", options: ["Actin filaments", "Microtubules", "Intermediate filaments", "Centrioles"], correct: "Actin filaments", explanation: "Actin-myosin ring contracts." },
+    { question: "What would be the direct result of using a drug that prevents the cyclin component of the MPF from being degraded?", options: ["The cell would remain in M phase and be unable to complete mitosis.", "The cell would enter G1", "DNA would replicate", "Cytokinesis would occur"], correct: "The cell would remain in M phase and be unable to complete mitosis.", explanation: "MPF stays active." },
+    { question: "What would be the direct result of using a drug that prevents the cyclin component of the MPF from being synthesized?", options: ["The cell would fail to enter mitosis and remain arrested in G₂.", "The cell would enter mitosis", "The cell would divide cytoplasm", "Chromosomes would align"], correct: "The cell would fail to enter mitosis and remain arrested in G₂.", explanation: "No MPF = no M phase." },
+    { question: "Homologous chromosomes _______", options: ["carry information for same traits", "are identical", "carry different traits", "are from different species"], correct: "carry information for same traits", explanation: "Paired chromosomes with same genes." },
+    { question: "Somatic cells of roundworms have four individual chromosomes per cell. How many chromosomes would you expect to find in an ovum from a roundworm?", options: ["2", "4", "8", "1"], correct: "2", explanation: "Gametes are haploid (n=2)." },
+    { question: "In the snail Pomacea patula catemacensis, n = 13. What is the diploid number for this organism?", options: ["26", "13", "39", "52"], correct: "26", explanation: "2n = 26." },
+    { question: "The chromosome number of hexaploid wheat, Triticum aestivum, can be represented as _", options: ["6n", "3n", "2n", "n"], correct: "6n", explanation: "Hexaploid = 6 sets." },
+    { question: "Gametes obtained from the mouse have twenty chromosomes per nucleus. How many chromosomes would you expect to find in a zygote of the mouse?", options: ["40", "20", "60", "10"], correct: "40", explanation: "Zygote = 2n = 40." },
+    { question: "Crossing over normally takes place during ______", options: ["Meiosis I (Prophase)", "Meiosis II", "Mitosis", "Interphase"], correct: "Meiosis I (Prophase)", explanation: "Prophase I: chiasmata formation." },
+    { question: "When does DNA replication take place regarding meiosis? ________", options: ["Occurs before Meiosis I begins", "During Meiosis I", "Between Meiosis I and II", "After Meiosis II"], correct: "Occurs before Meiosis I begins", explanation: "S phase precedes meiosis." },
+    { question: "When does the synaptonemal complex disappear?", options: ["late prophase of Meiosis I", "metaphase I", "anaphase I", "telophase I"], correct: "late prophase of Meiosis I", explanation: "Synapsis ends in diplotene." },
+    { question: "Independent assortment of chromosomes occurs during ________.", options: ["meiosis I only (Metaphase)", "meiosis II", "both meiosis I and II", "mitosis"], correct: "meiosis I only (Metaphase)", explanation: "Homologs align randomly." },
+    { question: "In meiosis, homologous chromosomes are separated during ______", options: ["anaphase I", "anaphase II", "prophase I", "metaphase I"], correct: "anaphase I", explanation: "Homologs pulled apart." },
+    { question: "When we first see chiasmata under a microscope, we know that _______", options: ["prophase 1 is occuring", "metaphase 1", "anaphase 1", "telophase 1"], correct: "prophase 1 is occuring", explanation: "Chiasmata = crossover points." },
+    { question: "Homologous pairs of chromosomes align opposite to each other at the equator of a cell during __", options: ["metaphase I of meiosis.", "metaphase II", "prophase I", "anaphase I"], correct: "metaphase I of meiosis.", explanation: "Tetrads at plate." }
+];
+/* ==================== CHALLENGING DISTRACTORS ==================== */
+const challengingDistractors = {
+    "________ is a product of glycolysis, pyruvate processing, and the citric acid cycle": ["NADH","NAD⁺","NADPH","FAD"],
+    "The glucose molecule has a large quantity of energy in its ________": ["C—H Bonds","C—C Bonds","C—O Bonds","O—H Bonds"],
+    "What is the term for metabolic pathways that release stored energy by breaking down complex molecules?": ["Catabolic Pathways","Anabolic Pathways","Amphibolic Pathways","Allosteric Pathways"],
+    "Describes the results of the following reaction C6H12O6 + 6O2 → 6 CO2 + 6 H2O + Energy": ["C6H12O6 is oxidized and O2 is reduced","C6H12O6 is reduced and O2 is oxidized","Both are oxidized via electron loss","Both are reduced via proton gain"],
+    "What is the major adaptive advantage of cellular respiration?": ["produce adenosine triphosphate (ATP)","generate reduced electron carriers","produce metabolic water","eliminate carbon waste"],
+    "In which subcellular location does glycolysis occur in prokaryotic and eukaryotic cells?": ["Cytosol/Cytoplasm","Mitochondrial matrix","Peroxisome","Cytoplasm (but not cytosol)"],
+    "What are the end products of glycolysis?": ["two NADH, two ATP, two Pyruvate","two NAD⁺, two ADP, two lactate","two FADH₂, four ATP, two pyruvate","two CO₂, two ATP, two acetyl CoA"],
+    "In glycolysis, for each molecule of glucose oxidized to pyruvate ________": ["2 molecules of ATP are used and 4 molecules of ATP are produced","4 molecules of ATP are used and 2 are produced","No ATP is used or produced","2 molecules of ATP are produced only"],
+    "During glycolysis, when each molecule of glucose is catabolized to two molecules of pyruvate, most of the potential energy contained in glucose is ________": ["retained in the two pyruvates","stored in NADH","transferred directly to ATP","dissipated as heat"],
+    "Why is glycolysis described as having an investment phase and a payoff phase?": ["It uses stored ATP and then forms a net increase in ATP","It produces ATP then consumes it","NADH is oxidized then reduced","Pyruvate is decarboxylated then phosphorylated"],
+    "During cellular respiration, acetyl CoA accumulates in which location?": ["mitochondrial matrix","cytosol","inner mitochondrial membrane","intermembrane space"],
+    "Pyruvate dehydrogenase activity would be at its lowest when ________": ["Pyruvate dehydrogenase is phosphorylated","ATP, acetyl CoA, and NAD⁺ are abundant","ADP, CoA, and NAD⁺ are abundant","Pyruvate and NAD⁺ are abundant"],
+    "Which process does not occur within the mitochondrion in a eukaryotic cell?": ["Glycolysis","Pyruvate oxidation","Citric acid cycle","Chemiosmosis"],
+    "Following glycolysis and the citric acid cycle, but before the electron transport chain and oxidative phosphorylation, the carbon skeleton of glucose has been broken down to CO2 with some net gain of ATP. Most of the energy from the original glucose molecule at that point in the process, is in the form of ________": ["NADH","FADH₂","ATP","Acetyl-CoA"],
+    "Which electron carrier(s) function in the citric acid cycle?": ["NADH and FADH2","Only NADH","Only FADH2","NADPH and FAD"],
+    "When a glucose molecule loses a hydrogen atom as the result of an oxidation-reduction reaction, the molecule becomes _______": ["oxidized","reduced","dehydrogenated","hydrated"],
+    "Citric acid cycle reaction rates are low when ____ or _____ are abundant": ["ATP and NADH","ATP and NAD⁺","ADP and NADH","FADH₂ and NAD⁺"],
+    "The production of ATP using the process of chemiosmosis is called": ["oxidative phosphorylation","substrate-level phosphorylation","photophosphorylation","proton-motive phosphorylation"],
+    "C6H12O6 (glucose) + 6 O2 → 6 CO2 + 6 H2O. Where is most of the water in this reaction produced?": ["In the electron transport chain","In glycolysis","In the citric acid cycle","In fermentation"],
+    "Where is oxygen gas consumed in the above reaction?": ["In the electron transport chain","In glycolysis","In the citric acid cycle","In pyruvate oxidation"],
+    "Energy released by the electron transport chain is used to pump H+ into which location in eukaryotic cells?": ["mitochondrial intermembrane space","mitochondrial matrix","cytosol","inner membrane matrix side"],
+    "The final electron acceptor of the electron transport chain that functions in aerobic oxidative phosphorylation is ________": ["oxygen","cytochrome c","ubiquinone","FAD"],
+    "Why are fermentation reactions important for cells?": ["They regenerate NAD+ so that glycolysis can continue to operate","They produce ATP via oxidative phosphorylation","Generate proton gradient","Oxidize pyruvate"],
+    "Which metabolic pathway is common to both cellular respiration and fermentation?": ["Glycolysis","Pyruvate oxidation","Citric acid cycle","Electron transport chain"],
+    "The ATP made during fermentation is generated by ________": ["substrate-level phosphorylation","oxidative phosphorylation","photophosphorylation","proton gradient-driven ATP synthase"],
+    "In the absence of oxygen, yeast cells can obtain energy by fermentation, resulting in the production of ________": ["ATP, CO2, and ethanol.","ATP, lactate","ATP, CO2, lactate","ATP, H₂O, CO₂"],
+    "In addition to ATP, what are the end products of glycolysis": ["Pyruvate and NADH","Lactate and NAD+","Acetyl CoA and CO2","Ethanol and CO2"],
+    "In eukaryotic cells, chromosomes are composed of _______": ["DNA and proteins","DNA only","RNA and histones","DNA and lipids"],
+    "A cell has 6 unreplicated chromosomes. How many replicated chromosomes does the cell have after S phase of interphase?": ["6","12","3","18"],
+    "The first gap in the cell cycle (G1) corresponds to ________": ["normal growth and cell function","DNA synthesis","chromosome condensation","spindle formation"],
+    "Before mitosis begins, chromosomes are attached only at the centromere": ["True","False"],
+    "A cell begins G1 phase with 6 unreplicated chromosomes. This cell undergoes S, G2, and M phases. How many chromosomes will the daughter cells contain?": ["6","12","3","18"],
+    "A cell near the end of anaphase of mitosis will have ________": ["no chromosomes in the center of the cell","chromosomes at the metaphase plate","condensed chromosomes only","decondensed chromosomes"],
+    "At which phase are centrioles beginning to move apart in animal cells?": ["Prophase","Prometaphase","Metaphase","Anaphase"],
+    "The microtubule-organizing center found in animal cells is an identifiable structure present during all phases of the cell cycle. Specifically, it is known as the ________": ["centrosome","centriole pair","kinetochore","aster"],
+    "Kinetochore microtubules assist in the process of splitting centromeres by ________": ["creating tension by pulling toward opposite poles of the cell","shortening via depolymerization","elongating via polymerization","dissolving cohesin"],
+    "Mitosis separates chromosomes. The cytoplasm is divided between two daughter cells through the process of ________": ["cytokinesis","karyokinesis","meiosis","binary fission"],
+    "_____ are primarily responsible for cytokinesis in plant cells but not in animal cells": ["Golgi-derived vesicles / Golgi Apparatus","Actin-myosin ring","Centrioles","Microtubules"],
+    "Once a cell completes mitosis, molecular division triggers must be turned off. What happens to MPF during mitosis?": ["The cyclin component of MPF is degraded.","The Cdk component is degraded","MPF is phosphorylated","MPF is dephosphorylated"],
+    "The MPF protein complex turns itself off by _____": ["activating a process that destroys cyclin components","synthesizing more Cdk","inhibiting phosphatase","binding to p53"],
+    "The decline of MPF activity at the end of mitosis is due to ________": ["degradation of cyclin","synthesis of cyclin","activation of Cdk","inactivation of APC/C"],
+    "The cyclin dependent component of MPF gets destroyed at the end of ________. The cell is unable to transition to ________ unless this happens": ["M, G1","G2, M","S, G2","G1, S"],
+    "The product of the p53 gene ________": ["inhibits the cell cycle","promotes the cell cycle","activates DNA polymerase","degrades DNA"],
+    "Regulatory proteins that prevent a cell from entering the S phase under conditions of DNA damage are also known as ________": ["tumor suppressors","proto-oncogenes","growth factors","cyclin-Cdk complexes"],
+    "If a non-cancerous cell has accumulated DNA damage, it is unlikely to __": ["pass the G2 checkpoint","pass the G1 checkpoint","enter mitosis","complete cytokinesis"],
+    "______________would be used to differentiate between benign and malignant tumors": ["The ability to invade other tissues","Size greater than 2 cm","Irregular color","Location in vital organ"],
+    "_____________would occur if the Rb protein was inactivated": ["S phase would be activated in the absence of growth factors","G1 arrest","Immediate apoptosis","M phase entry"],
+    "Ras protein found in tumors would cause _________": ["excessive cell division","cell cycle arrest","differentiation","apoptosis"],
+    "Cyclin-dependent kinase (Cdk) is ________": ["an enzyme that attaches phosphate groups to other proteins.","a transcription factor","a growth factor receptor","a cyclin protein"],
+    "Neurons and some other specialized cells divide infrequently because they ________": ["have entered into G0","lack Cdk","have no DNA","are in S phase"],
+    "In human and many other eukaryotic species' cells, the nuclear membrane has to disappear to permit ________": ["the attachment of microtubules to kinetochores","DNA replication","cytokinesis","organelle segregation"],
+    "Proteins that are involved in the regulation of the cell cycle and that show fluctuations in concentration during the cell cycle are called ________": ["cyclins","Cdks","Rb","p53"],
+    "Which cytoskeletal proteins are important constituents of the contractile structures that form the cleavage furrows involved in animal cell cytokinesis?": ["Actin filaments","Microtubules","Intermediate filaments","Centrioles"],
+    "What would be the direct result of using a drug that prevents the cyclin component of the MPF from being degraded?": ["The cell would remain in M phase and be unable to complete mitosis.","The cell would enter G1","DNA would replicate","Cytokinesis would occur"],
+    "What would be the direct result of using a drug that prevents the cyclin component of the MPF from being synthesized?": ["The cell would fail to enter mitosis and remain arrested in G₂.","The cell would enter mitosis","The cell would divide cytoplasm","Chromosomes would align"],
+    "Homologous chromosomes _______": ["carry information for same traits","are identical","carry different traits","are from different species"],
+    "Somatic cells of roundworms have four individual chromosomes per cell. How many chromosomes would you expect to find in an ovum from a roundworm?": ["2","4","8","1"],
+    "In the snail Pomacea patula catemacensis, n = 13. What is the diploid number for this organism?": ["26","13","39","52"],
+    "The chromosome number of hexaploid wheat, Triticum aestivum, can be represented as _": ["6n","3n","2n","n"],
+    "Gametes obtained from the mouse have twenty chromosomes per nucleus. How many chromosomes would you expect to find in a zygote of the mouse?": ["40","20","60","10"],
+    "Crossing over normally takes place during ______": ["Meiosis I (Prophase)","Meiosis II","Mitosis","Interphase"],
+    "When does DNA replication take place regarding meiosis? ________": ["Occurs before Meiosis I begins","During Meiosis I","Between Meiosis I and II","After Meiosis II"],
+    "When does the synaptonemal complex disappear?": ["late prophase of Meiosis I","metaphase I","anaphase I","telophase I"],
+    "Independent assortment of chromosomes occurs during ________": ["meiosis I only (Metaphase)","meiosis II","both meiosis I and II","mitosis"],
+    "In meiosis, homologous chromosomes are separated during ______": ["anaphase I","anaphase II","prophase I","metaphase I"],
+    "When we first see chiasmata under a microscope, we know that _______": ["prophase 1 is occuring","metaphase 1","anaphase 1","telophase 1"],
+    "Homologous pairs of chromosomes align opposite to each other at the equator of a cell during __": ["metaphase I of meiosis.","metaphase II","prophase I","anaphase I"]
+};
+/* ==================== HELPERS ==================== */
+function normalize(str){ return str.replace(/\s+/g,' ').trim(); }
+function prepareQuestions(mode){
+    let list = originalQuestions.map(q=>({...q}));
+    if(mode==='challenging'){
+        list = list.map(q=>{
+            const key = normalize(q.question);
+            if(challengingDistractors[key]){
+                return {...q, options: challengingDistractors[key]};
+            }
+            return q;
+        });
+    }
+    if(mode==='warmup'){
+        list = list.sort(()=>Math.random()-0.5).slice(0,10);
+    }else{
+        list = list.sort(()=>Math.random()-0.5);
+    }
+    return list.map(q=>{
+        const shuffled = [...q.options].sort(()=>Math.random()-0.5);
+        const correctIndex = shuffled.indexOf(q.correct);
+        return {...q, shuffledOptions:shuffled, correctIndex};
+    });
+}
+/* ==================== STATE ==================== */
+let currentMode = 'normal';
+let questions = [];
+let currentIndex = 0;
+let userAnswers = []; // index of selected option (or -1 if not answered)
+let locked = []; // true when answer is locked
+/* ==================== UI FUNCTIONS ==================== */
+function initExam(mode){
+    currentMode = mode;
+    questions = prepareQuestions(mode);
+    currentIndex = 0;
+    userAnswers = new Array(questions.length).fill(-1);
+    locked = new Array(questions.length).fill(false);
+    document.getElementById('exam-container').style.display='block';
+    document.getElementById('results-container').style.display='none';
+    updateTabs();
+    displayQuestion();
+    updateButtons();
+}
+function updateTabs(){
+    document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById(`${currentMode}-tab`).classList.add('active');
+}
+function saveCurrentAnswer(){
+    const sel = document.querySelector('input[name="answer"]:checked');
+    if(sel) userAnswers[currentIndex] = parseInt(sel.value);
+}
+function displayQuestion(){
+    const q = questions[currentIndex];
+    let html = `
+        <div class="question-header">
+            <div class="question-number">Question ${currentIndex+1} of ${questions.length}</div>
+        </div>
+        <div class="question">
+            <p>${q.question}</p>
+    `;
+    q.shuffledOptions.forEach((opt,i)=>{
+        const selected = userAnswers[currentIndex]===i;
+        const isLocked = locked[currentIndex];
+        const isCorrect = isLocked && i===q.correctIndex;
+        const isWrong = isLocked && selected && i!==q.correctIndex;
+        const optClass = isCorrect ? 'correct' : (isWrong ? 'incorrect' : '');
+        html+=`
+            <div class="option ${optClass}">
+                <input type="radio" id="opt${i}" name="answer" value="${i}" ${selected?'checked':''} ${isLocked?'disabled':''}>
+                <label for="opt${i}">${opt}</label>
+            </div>`;
+    });
+    html+=`</div>`;
+    document.getElementById('question-display').innerHTML=html;
+    // attach live selection handler
+    document.querySelectorAll('input[name="answer"]').forEach(r=>{
+        r.onchange = () => {
+            saveCurrentAnswer();
+            updateButtons();
+        };
+    });
+    updateButtons();
+}
+function updateButtons(){
+    const isFirst = currentIndex===0;
+    const isLast = currentIndex===questions.length-1;
+    const answered = userAnswers[currentIndex] !== -1;
+    const isLocked = locked[currentIndex];
+    document.getElementById('prev-btn').disabled = isFirst;
+    document.getElementById('next-btn').disabled = isLast;
+    document.getElementById('check-btn').disabled = isLocked || !answered;
+    document.getElementById('submit-btn').style.display = isLast ? 'inline-block' : 'none';
+}
+function lockAnswer(){
+    if(userAnswers[currentIndex]===-1) return;
+    locked[currentIndex]=true;
+    displayQuestion(); // redraw with disabled radios + green/red
+}
+function nextQuestion(){
+    saveCurrentAnswer();
+    if(currentIndex < questions.length-1){
+        currentIndex++;
+        displayQuestion();
+    }
+}
+function prevQuestion(){
+    saveCurrentAnswer();
+    if(currentIndex > 0){
+        currentIndex--;
+        displayQuestion();
+    }
+}
+function submitExam(){
+    // lock any remaining answered questions
+    userAnswers.forEach((a,i)=>{ if(a!==-1 && !locked[i]) locked[i]=true; });
+    let correct = 0;
+    userAnswers.forEach((a,i)=>{
+        if(a===questions[i].correctIndex) correct++;
+    });
+    const pct = (correct/questions.length*100).toFixed(1);
+    document.getElementById('score').innerHTML = `${correct}/${questions.length} Correct<br><small style="font-size:1.2rem;opacity:.8;">${pct}%</small>`;
+    let res = '';
+    questions.forEach((q,i)=>{
+        const usr = userAnswers[i]!==-1 ? q.shuffledOptions[userAnswers[i]] : 'Not answered';
+        const cls = userAnswers[i]===q.correctIndex ? 'correct' : 'incorrect';
+        res += `
+            <div class="result-item">
+                <h3>Question ${i+1}</h3>
+                <p><strong>Your answer:</strong> <span class="${cls}">${usr}</span></p>
+                <p><strong>Correct:</strong> ${q.correct}</p>
+                <p><em>${q.explanatory || q.explanation}</em></p>
+            </div>`;
+    });
+    document.getElementById('results-list').innerHTML = res;
+    document.getElementById('exam-container').style.display='none';
+    document.getElementById('results-container').style.display='block';
+}
+/* ==================== EVENTS ==================== */
+document.getElementById('normal-tab').onclick = ()=>initExam('normal');
+document.getElementById('challenging-tab').onclick = ()=>initExam('challenging');
+document.getElementById('warmup-tab').onclick = ()=>initExam('warmup');
+document.getElementById('prev-btn').onclick = prevQuestion;
+document.getElementById('check-btn').onclick = lockAnswer;
+document.getElementById('next-btn').onclick = nextQuestion;
+document.getElementById('submit-btn').onclick = submitExam;
+/* ==================== START ==================== */
+initExam('normal');
+</script>
+</body>
+</html>
