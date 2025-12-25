@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIOL112 Fall 2025 Exam 1 Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+            font-family: 'Arial', sans-serif;
+        }
+        .question-card {
+            transition: transform 0.3s ease-in-out;
+        }
+        .question-card:hover {
+            transform: scale(1.02);
+        }
+        .feedback {
+            display: none;
+            color: #dc2626;
+            font-weight: bold;
+        }
+        .correct {
+            color: #16a34a;
+        }
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        #final-screen {
+            display: none;
+            text-align: center;
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <canvas id="confetti-canvas"></canvas>
+    <div class="bg-white rounded-lg shadow-2xl p-6 max-w-2xl w-full relative z-10">
+        <h1 class="text-3xl font-bold text-center text-indigo-600 mb-4">BIOL112 Exam 1: Epic Bio Quiz Adventure! 🧬</h1>
+        <div id="quiz-container">
+            <!-- Questions will be dynamically inserted here -->
+        </div>
+        <div id="final-screen" class="mt-6">
+            <h2 class="text-2xl font-bold text-indigo-600 mb-4">Quiz Complete!</h2>
+            <p id="final-score" class="text-xl text-indigo-700 mb-4"></p>
+            <button id="restart-btn" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Restart Quiz</button>
+        </div>
+        <div id="button-container" class="flex justify-between mt-6">
+            <button id="prev-btn" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 disabled:bg-gray-400" disabled>Previous</button>
+            <button id="submit-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Submit Answer</button>
+            <button id="next-btn" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">Next</button>
+        </div>
+        <div id="score" class="text-center mt-4 text-lg font-semibold text-indigo-700">
+            Score: 0 / 47
+        </div>
+    </div>
+
+    <script>
+        // Fisher-Yates shuffle function
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        const questions = [
+            {
+                question: "The five fundamental characteristics of life?",
+                options: [
+                    "Cells, information, energy, replication, evolution",
+                    "Growth, movement, respiration, digestion, excretion",
+                    "Cells, tissues, organs, systems, organisms",
+                    "Energy, atoms, molecules, replication, mutation"
+                ],
+                answer: 0,
+                explanation: "All living organisms are made of cells, use information (DNA), require energy, replicate, and evolve over time."
+            },
+            {
+                question: "Pasteur's experiments proved that",
+                options: [
+                    "Cells arise from preexisting cells and don’t arise by spontaneous generation",
+                    "Cells can form from nonliving matter under heat",
+                    "Microorganisms grow only in nutrient-rich broth",
+                    "Spontaneous generation occurs in sterile environments"
+                ],
+                answer: 0,
+                explanation: "Pasteur showed that cells come from preexisting cells, disproving spontaneous generation."
+            },
+            {
+                question: "Recall Pasteur's experiment on spontaneous generation. If he had just warmed the nutrient rich broth, rather than boiled it, what would have been the likely outcome of his experiment?",
+                options: [
+                    "Cells would still appear, because warming wouldn’t kill preexisting microorganisms",
+                    "No cells would appear due to insufficient heat",
+                    "Cells would form spontaneously from the broth",
+                    "The broth would remain sterile indefinitely"
+                ],
+                answer: 0,
+                explanation: "Warming wouldn’t kill existing microorganisms, so cells would still grow."
+            },
+            {
+                question: "The discovery of the structure of DNA was useful because",
+                options: [
+                    "It revealed how hereditary information is stored, copied, and passed to the next generation",
+                    "It showed how proteins are synthesized in cells",
+                    "It explained the origin of spontaneous generation",
+                    "It identified the source of cellular energy"
+                ],
+                answer: 0,
+                explanation: "DNA’s double helix structure explains how genetic information is stored, replicated, and transmitted."
+            },
+            {
+                question: "What are some evidence of the common ancestry of all life?",
+                options: [
+                    "All organisms are made of cells, use DNA, share a genetic code, and have similar metabolic pathways",
+                    "All organisms have identical physical traits",
+                    "All organisms use the same enzymes for digestion",
+                    "All organisms reproduce at the same rate"
+                ],
+                answer: 0,
+                explanation: "Shared cellular structure, DNA, genetic code (A, T, C, G), and metabolic pathways (e.g., ATP) indicate common ancestry."
+            },
+            {
+                question: "What features describe the logic of scientific inquiry?",
+                options: [
+                    "Asking testable questions, formulating hypotheses, making predictions, designing controlled experiments, collecting measurable data",
+                    "Guessing answers, conducting random tests, ignoring data",
+                    "Observing without testing, avoiding predictions, skipping experiments",
+                    "Formulating theories without hypotheses or data"
+                ],
+                answer: 0,
+                explanation: "Scientific inquiry involves testable questions, hypotheses, predictions, controlled experiments, and data collection."
+            },
+            {
+                question: "What is the difference between scientific hypotheses and scientific theories?",
+                options: [
+                    "Hypothesis: a testable, narrow explanation; Theory: a broad, well-supported explanation",
+                    "Hypothesis: a proven fact; Theory: an untested guess",
+                    "Hypothesis: a broad explanation; Theory: a specific observation",
+                    "Hypothesis: always correct; Theory: always incorrect"
+                ],
+                answer: 0,
+                explanation: "Hypotheses are specific, testable ideas; theories are broad, well-tested explanations."
+            },
+            {
+                question: "A friend of yours calls to say that his car would not start this morning. He asks for your help. You say that you think the battery must be dead. If so, then jump-starting the car from a good battery will solve the problem. In doing so, you are",
+                options: [
+                    "Formulating a hypothesis and prediction",
+                    "Conducting a controlled experiment",
+                    "Proving a scientific theory",
+                    "Observing spontaneous generation"
+                ],
+                answer: 0,
+                explanation: "You’re proposing a testable idea (hypothesis: dead battery) and a prediction (jump-starting will work)."
+            },
+            {
+                question: "Recall the experiment on ant navigation. To run a controlled experiment, what parameters were held constant for the test group of 75 ants?",
+                options: [
+                    "The distance the ants traveled, the nest and feeder location, environmental conditions (e.g., terrain)",
+                    "The number of ants, their diet, and the time of day",
+                    "The type of food, the ant species, and the weather",
+                    "The nest location, the ant size, and the temperature"
+                ],
+                answer: 0,
+                explanation: "Controlled experiments keep variables like distance, nest/feeder location, and terrain constant."
+            },
+            {
+                question: "In an attempt to examine the idea of spontaneous generation, Pasteur conducted experiments utilizing different shaped flasks. Upon designing the study, he noted “that if cells come only from preexisting cells, then the different shapes of flasks would produce different growth observations,” which served as the",
+                options: [
+                    "Prediction of the study",
+                    "Conclusion of the study",
+                    "Hypothesis of the study",
+                    "Theory of the study"
+                ],
+                answer: 0,
+                explanation: "Pasteur’s statement about flask shapes and growth is a testable prediction."
+            },
+            {
+                question: "Some differences between eukaryotes and prokaryotes",
+                options: [
+                    "Prokaryotes: no nucleus, no membrane-bound organelles, smaller; Eukaryotes: nucleus, many organelles, larger",
+                    "Prokaryotes: have nucleus, larger; Eukaryotes: no nucleus, smaller",
+                    "Prokaryotes: use RNA, no organelles; Eukaryotes: use DNA, many organelles",
+                    "Prokaryotes: multicellular; Eukaryotes: unicellular"
+                ],
+                answer: 0,
+                explanation: "Prokaryotes lack a nucleus and organelles and are smaller; eukaryotes have both and are larger."
+            },
+            {
+                question: "What are the qualities of a good scientific hypothesis?",
+                options: [
+                    "Testable, specific, predictive",
+                    "Vague, untestable, broad",
+                    "Always true, general, complex",
+                    "Based on opinion, non-specific, non-measurable"
+                ],
+                answer: 0,
+                explanation: "A good hypothesis is testable, specific to an observation, and makes predictions."
+            },
+            {
+                question: "The cell theory states that all cells come from preexisting cells. If this is the case, why are the cells in a multicellular organism so different from one another?",
+                options: [
+                    "Because they express different sets of genes, even though they have the same DNA",
+                    "Because they have different DNA sequences",
+                    "Because they originate from different organisms",
+                    "Because they use different genetic codes"
+                ],
+                answer: 0,
+                explanation: "Cells differentiate by expressing different genes from the same DNA."
+            },
+            {
+                question: "Double helical DNA",
+                options: [
+                    "Encodes hereditary information that directs growth, reproduction, and protein synthesis",
+                    "Directly catalyzes metabolic reactions",
+                    "Provides energy for cellular processes",
+                    "Forms the cell membrane structure"
+                ],
+                answer: 0,
+                explanation: "DNA’s double helix stores genetic info for growth, reproduction, and protein synthesis."
+            },
+            {
+                question: "How does energy acquisition vary among organisms? (define autotroph, heterotroph)",
+                options: [
+                    "Autotroph: produce their own food (e.g., plants using photosynthesis); Heterotrophs: consume other organisms for energy (e.g., animals)",
+                    "Autotroph: consume other organisms; Heterotroph: produce their own food",
+                    "Autotroph: use DNA for energy; Heterotroph: use RNA for energy",
+                    "Autotroph: multicellular only; Heterotroph: unicellular only"
+                ],
+                answer: 0,
+                explanation: "Autotrophs make their own food (e.g., via photosynthesis); heterotrophs eat others."
+            },
+            {
+                question: "List the classic Linnaean ranks for animals, from largest and most inclusive to smallest and least inclusive",
+                options: [
+                    "Domain → Kingdom → Phylum → Class → Order → Family → Genus → Species",
+                    "Species → Genus → Family → Order → Class → Phylum → Kingdom → Domain",
+                    "Kingdom → Domain → Phylum → Class → Order → Family → Genus → Species",
+                    "Domain → Phylum → Kingdom → Class → Order → Family → Species → Genus"
+                ],
+                answer: 0,
+                explanation: "Linnaean ranks go from broadest (Domain) to most specific (Species)."
+            },
+            {
+                question: "About 25 of the 92 natural elements are known to be essential to life. Which 4 of these 25 elements make up approximately 96 percent of living matter?",
+                options: [
+                    "Carbon, Hydrogen, Oxygen, Nitrogen",
+                    "Carbon, Sulfur, Phosphorus, Calcium",
+                    "Oxygen, Nitrogen, Iron, Magnesium",
+                    "Hydrogen, Helium, Carbon, Oxygen"
+                ],
+                answer: 0,
+                explanation: "C, H, O, and N make up ~96% of living matter due to their role in organic molecules."
+            },
+            {
+                question: "Why is each element unique with respect to its chemical properties? Each element has a distinctive",
+                options: [
+                    "Number of protons (atomic number)",
+                    "Number of neutrons",
+                    "Number of electrons in the inner shell",
+                    "Atomic mass"
+                ],
+                answer: 0,
+                explanation: "The number of protons (atomic number) defines an element’s chemical properties."
+            },
+            {
+                question: "Carbon-12 is the most common isotope of carbon and has a mass number of 12. However, the average atomic mass of carbon found on a periodic table is slightly more than 12 daltons. Why?",
+                options: [
+                    "Because carbon also has other isotopes (C-13 and C-14), and the atomic mass is a weighted average",
+                    "Because carbon-12 is unstable and decays",
+                    "Because electrons add significant mass",
+                    "Because protons vary in number"
+                ],
+                answer: 0,
+                explanation: "The atomic mass is a weighted average of isotopes like C-13 and C-14."
+            },
+            {
+                question: "From its atomic number of 15, it is possible to predict that the phosphorus atom has",
+                options: [
+                    "15 protons and 15 electrons",
+                    "15 neutrons and 15 electrons",
+                    "15 protons and 30 electrons",
+                    "15 neutrons and 30 protons"
+                ],
+                answer: 0,
+                explanation: "Atomic number (15) indicates 15 protons and, in a neutral atom, 15 electrons."
+            },
+            {
+                question: "A covalent chemical bond is one in which",
+                options: [
+                    "Two atoms share a pair of valence electrons",
+                    "Atoms transfer electrons to form ions",
+                    "Atoms are held by weak van der Waals forces",
+                    "Atoms share protons between nuclei"
+                ],
+                answer: 0,
+                explanation: "Covalent bonds involve sharing valence electron pairs between atoms."
+            },
+            {
+                question: "Nitrogen (N) is more electronegative than hydrogen (H). Which of the following is a correct statement about the atoms in ammonia (NH3)?",
+                options: [
+                    "Electrons are pulled more toward nitrogen, so N has a partial negative charge and H atoms have partial positive charges",
+                    "Hydrogen pulls electrons, so H has a negative charge",
+                    "Nitrogen and hydrogen share electrons equally",
+                    "Ammonia has no polar bonds"
+                ],
+                answer: 0,
+                explanation: "Nitrogen’s higher electronegativity creates polar covalent bonds in NH3."
+            },
+            {
+                question: "Bonds between two atoms that are equally electronegative are",
+                options: [
+                    "Nonpolar covalent bonds",
+                    "Polar covalent bonds",
+                    "Ionic bonds",
+                    "Hydrogen bonds"
+                ],
+                answer: 0,
+                explanation: "Equal electronegativity results in nonpolar covalent bonds with even electron sharing."
+            },
+            {
+                question: "How many electrons are involved in a single covalent bond?",
+                options: [
+                    "Two electrons (one pair)",
+                    "One electron",
+                    "Four electrons (two pairs)",
+                    "Three electrons"
+                ],
+                answer: 0,
+                explanation: "A single covalent bond involves one pair of electrons (two electrons)."
+            },
+            {
+                question: "Elements found on the left side of the periodic table contain outer shells that are; these elements tend to form in solution.",
+                options: [
+                    "Almost empty; cations (positively charged ions)",
+                    "Almost full; anions (negatively charged ions)",
+                    "Completely full; neutral atoms",
+                    "Half full; covalent bonds"
+                ],
+                answer: 0,
+                explanation: "Left-side elements have few valence electrons, losing them to form cations."
+            },
+            {
+                question: "An atom has four electrons in its valence shell. What types of covalent bonds is it capable of forming?",
+                options: [
+                    "Up to four covalent bonds (single, double, or triple)",
+                    "Only single covalent bonds",
+                    "Only double covalent bonds",
+                    "No covalent bonds"
+                ],
+                answer: 0,
+                explanation: "Four valence electrons allow up to four covalent bonds (e.g., carbon)."
+            },
+            {
+                question: "You need to write down information about a molecule, but you only need to indicate the type and number of atoms it contains. Which representation would work best?",
+                options: [
+                    "Molecular formula",
+                    "Structural formula",
+                    "Ball-and-stick model",
+                    "Space-filling model"
+                ],
+                answer: 0,
+                explanation: "A molecular formula (e.g., C6H12O6) shows the type and number of atoms."
+            },
+            {
+                question: "You need to represent a molecule to best illustrate the relative sizes of the atoms involved and their spatial relationships. Which representation would work best?",
+                options: [
+                    "Space-filling model",
+                    "Molecular formula",
+                    "Structural formula",
+                    "Lewis dot structure"
+                ],
+                answer: 0,
+                explanation: "Space-filling models show atom sizes and 3D spatial relationships."
+            },
+            {
+                question: "The complexity and variety of organic molecules is due to",
+                options: [
+                    "Carbon’s ability to form four covalent bonds and diverse molecular shapes",
+                    "Oxygen’s high electronegativity",
+                    "Hydrogen’s ability to form ionic bonds",
+                    "Nitrogen’s single-bonding capacity"
+                ],
+                answer: 0,
+                explanation: "Carbon’s four covalent bonds enable diverse, complex organic molecules."
+            },
+            {
+                question: "Which functional groups acts most like an acid in water?",
+                options: [
+                    "Carboxyl group (-COOH)",
+                    "Hydroxyl group (-OH)",
+                    "Amino group (-NH2)",
+                    "Methyl group (-CH3)"
+                ],
+                answer: 0,
+                explanation: "The carboxyl group (-COOH) donates protons, acting as an acid."
+            },
+            {
+                question: "Compounds containing which functional groups would be most likely to behave in a polar manner?",
+                options: [
+                    "Hydroxyl, Carbonyl, Carboxyl, Amino, Phosphate",
+                    "Methyl, Ethyl, Propyl, Butyl",
+                    "Alkyl, Aryl, Phenyl",
+                    "Sulfhydryl, Carbonyl, Methyl"
+                ],
+                answer: 0,
+                explanation: "Polar functional groups (e.g., -OH, -COOH) create polar molecules."
+            },
+            {
+                question: "Stanley Miller's 1953 experiments supported the hypothesis that",
+                options: [
+                    "Organic molecules could form spontaneously from simple molecules with energy input",
+                    "Life originated from extraterrestrial sources",
+                    "Proteins form without DNA",
+                    "Water alone can create amino acids"
+                ],
+                answer: 0,
+                explanation: "Miller showed organic molecules could form in Earth’s early atmosphere."
+            },
+            {
+                question: "Describe one of the properties of liquid water? Liquid water",
+                options: [
+                    "Is denser than ice, cohesive/adhesive, has high surface tension, or absorbs large amounts of energy",
+                    "Is less dense than ice, non-cohesive, low surface tension",
+                    "Cannot form hydrogen bonds, low specific heat",
+                    "Freezes at room temperature"
+                ],
+                answer: 0,
+                explanation: "Liquid water’s properties include high density, cohesion, and specific heat."
+            },
+            {
+                question: "A solution with a pH of 5 has how many more protons in it than a solution with a pH of 7?",
+                options: [
+                    "100 times more",
+                    "10 times more",
+                    "1000 times more",
+                    "2 times more"
+                ],
+                answer: 0,
+                explanation: "Each pH unit is a 10-fold change; 2 units = 100 times more protons."
+            },
+            {
+                question: "A solution contains 0.0000001 (10⁻⁷) moles of hydroxyl ions [OH⁻] per liter. The solution is",
+                options: [
+                    "Neutral (pH=7)",
+                    "Acidic (pH<7)",
+                    "Basic (pH>7)",
+                    "Cannot be determined"
+                ],
+                answer: 0,
+                explanation: "10⁻⁷ M OH⁻ corresponds to pH 7 (neutral), where [H⁺] = [OH⁻]."
+            },
+            {
+                question: "The unique property of water that allows ice to float and prevents lakes from freezing solid is",
+                options: [
+                    "Water is less dense as a solid than as a liquid",
+                    "Water is denser as a solid",
+                    "Water has low specific heat",
+                    "Water lacks hydrogen bonds"
+                ],
+                answer: 0,
+                explanation: "Ice’s lower density causes it to float, insulating lakes."
+            },
+            {
+                question: "What are some conditions that tend to make chemical reactions spontaneous?",
+                options: [
+                    "Products have lower potential energy and higher entropy",
+                    "Products have higher potential energy and lower entropy",
+                    "Reactants have no energy change",
+                    "Reactions require external catalysts"
+                ],
+                answer: 0,
+                explanation: "Spontaneous reactions favor lower energy and higher entropy."
+            },
+            {
+                question: "A water molecule is polar because",
+                options: [
+                    "Oxygen is more electronegative than hydrogen, creating partial charges",
+                    "Hydrogen is more electronegative than oxygen",
+                    "Water has nonpolar covalent bonds",
+                    "Water has equal charge distribution"
+                ],
+                answer: 0,
+                explanation: "Oxygen’s electronegativity makes water polar with partial charges."
+            },
+            {
+                question: "Which type of bond must be broken for water to vaporize?",
+                options: [
+                    "Hydrogen bonds",
+                    "Covalent bonds",
+                    "Ionic bonds",
+                    "Van der Waals forces"
+                ],
+                answer: 0,
+                explanation: "Vaporization breaks hydrogen bonds between water molecules."
+            },
+            {
+                question: "A water strider can walk on the surface of a pond because of",
+                options: [
+                    "Surface tension caused by cohesion of water molecules",
+                    "Low density of liquid water",
+                    "Covalent bonding in water",
+                    "High viscosity of water"
+                ],
+                answer: 0,
+                explanation: "Water’s cohesive hydrogen bonds create surface tension."
+            },
+            {
+                question: "The ability of water to absorb a lot of heat before its temperature rises significantly is known as its",
+                options: [
+                    "High specific heat",
+                    "Low surface tension",
+                    "High viscosity",
+                    "Low density"
+                ],
+                answer: 0,
+                explanation: "High specific heat allows water to absorb heat with minimal temperature change."
+            },
+            {
+                question: "What are the components of each monomer used to make proteins?",
+                options: [
+                    "A hydrogen atom, amino group, carboxyl group, R-group",
+                    "A phosphate group, sugar, nitrogenous base",
+                    "A fatty acid, glycerol, phosphate",
+                    "A carbon ring, hydroxyl group, methyl group"
+                ],
+                answer: 0,
+                explanation: "Amino acids (protein monomers) have H, -NH2, -COOH, and an R-group."
+            },
+            {
+                question: "What component of amino acid structure varies among different amino acids?",
+                options: [
+                    "The R-group (side chain)",
+                    "The amino group",
+                    "The carboxyl group",
+                    "The hydrogen atom"
+                ],
+                answer: 0,
+                explanation: "The R-group’s structure and properties vary among amino acids."
+            },
+            {
+                question: "At about pH 7 in most cells, what happens to the amino group on an amino acid?",
+                options: [
+                    "It ionizes and becomes -NH3⁺",
+                    "It loses a proton and becomes -NH",
+                    "It remains neutral (-NH2)",
+                    "It forms a covalent bond with the carboxyl group"
+                ],
+                answer: 0,
+                explanation: "At pH 7, the amino group gains a proton, becoming -NH3⁺."
+            },
+            {
+                question: "At about pH 7 in most cells, what happens to the carboxyl group on an amino acid?",
+                options: [
+                    "It ionizes and becomes -COO⁻",
+                    "It gains a proton and becomes -COOH2",
+                    "It remains neutral (-COOH)",
+                    "It forms a hydrogen bond with the amino group"
+                ],
+                answer: 0,
+                explanation: "At pH 7, the carboxyl group loses a proton, becoming -COO⁻."
+            },
+            {
+                question: "A peptide bond",
+                options: [
+                    "Is a covalent C–N bond formed between the carboxyl group of one amino acid and the amino group of another during a condensation reaction",
+                    "Is a hydrogen bond between R-groups",
+                    "Is an ionic bond between amino acids",
+                    "Is a van der Waals interaction in the backbone"
+                ],
+                answer: 0,
+                explanation: "Peptide bonds are covalent, formed via condensation between -COOH and -NH2."
+            },
+            {
+                question: "The bonding of two amino acid molecules to form a larger molecule requires the",
+                options: [
+                    "Removal of water molecules (condensation reaction)",
+                    "Addition of water molecules (hydrolysis)",
+                    "Breaking of hydrogen bonds",
+                    "Formation of ionic bonds"
+                ],
+                answer: 0,
+                explanation: "Peptide bond formation is a condensation reaction, releasing water."
+            },
+            {
+                question: "There are 20 different amino acids. What makes one amino acid different from another?",
+                options: [
+                    "The structure and chemical properties of its R-group",
+                    "The number of hydrogen atoms",
+                    "The type of peptide bond formed",
+                    "The presence of a carboxyl group"
+                ],
+                answer: 0,
+                explanation: "The R-group’s unique structure defines each amino acid."
+            },
+            {
+                question: "Which two functional groups are always found in amino acids?",
+                options: [
+                    "Amino group (-NH2) and carboxyl group (-COOH)",
+                    "Hydroxyl group (-OH) and methyl group (-CH3)",
+                    "Phosphate group (-PO4) and amino group (-NH2)",
+                    "Carbonyl group (-C=O) and carboxyl group (-COOH)"
+                ],
+                answer: 0,
+                explanation: "All amino acids have an amino group and a carboxyl group."
+            },
+            {
+                question: "Which type of interaction stabilizes the α-helix and the β-pleated sheet structures of proteins?",
+                options: [
+                    "Hydrogen bonds between carbonyl and amino groups of the backbone",
+                    "Covalent bonds between R-groups",
+                    "Ionic bonds between side chains",
+                    "Van der Waals forces in the core"
+                ],
+                answer: 0,
+                explanation: "Hydrogen bonds in the backbone stabilize α-helices and β-sheets."
+            },
+            {
+                question: "You are studying a protein that is shaped like a doughnut. The shape is a function of which level(s) of protein structure?",
+                options: [
+                    "Tertiary (3D folding) and possibly quaternary (if multiple subunits)",
+                    "Primary and secondary only",
+                    "Secondary and quaternary only",
+                    "Primary only"
+                ],
+                answer: 0,
+                explanation: "The 3D ‘doughnut’ shape involves tertiary and possibly quaternary structure."
+            },
+            {
+                question: "A series of hydrophobic side chains will congregate together as a protein folds in an aqueous solution and be stabilized by",
+                options: [
+                    "Hydrophobic interactions and van der Waals interactions",
+                    "Hydrogen bonds between R-groups",
+                    "Ionic bonds between side chains",
+                    "Covalent bonds in the backbone"
+                ],
+                answer: 0,
+                explanation: "Hydrophobic side chains cluster via hydrophobic and van der Waals interactions."
+            },
+            {
+                question: "The tertiary structure of a protein is the",
+                options: [
+                    "Overall 3D shape of polypeptide formed by interactions between R-groups",
+                    "Sequence of amino acids",
+                    "Local folding into α-helices or β-sheets",
+                    "Interaction of multiple polypeptides"
+                ],
+                answer: 0,
+                explanation: "Tertiary structure is the 3D shape from R-group interactions."
+            },
+            {
+                question: "At which level of protein structure are interactions between the side chains (R-groups) most important?",
+                options: [
+                    "Tertiary structure",
+                    "Primary structure",
+                    "Secondary structure",
+                    "Quaternary structure"
+                ],
+                answer: 0,
+                explanation: "R-group interactions drive tertiary structure folding."
+            },
+            {
+                question: "The structural level of a protein LEAST affected by a disruption in hydrogen bonding is the",
+                options: [
+                    "Primary structure (sequence of amino acids)",
+                    "Secondary structure",
+                    "Tertiary structure",
+                    "Quaternary structure"
+                ],
+                answer: 0,
+                explanation: "Primary structure (amino acid sequence) relies on peptide bonds, not hydrogen bonds."
+            },
+            {
+                question: "Which level of protein structure do the α-helix and the β-pleated sheet represent?",
+                options: [
+                    "Secondary structure",
+                    "Primary structure",
+                    "Tertiary structure",
+                    "Quaternary structure"
+                ],
+                answer: 0,
+                explanation: "α-helices and β-sheets are secondary structures."
+            },
+            {
+                question: "Suppose you discovered a new amino acid. Its R-group contains only hydrogen and carbon atoms. Predict the behavior of this amino acid.",
+                options: [
+                    "It would be nonpolar and hydrophobic",
+                    "It would be polar and hydrophilic",
+                    "It would be charged and acidic",
+                    "It would be ionic and basic"
+                ],
+                answer: 0,
+                explanation: "An R-group with only H and C is nonpolar and hydrophobic."
+            },
+            {
+                question: "Why does a fever become dangerous to body functions if it continues to rise?",
+                options: [
+                    "High temperatures can cause proteins to denature (unfold), losing their function",
+                    "High temperatures increase protein synthesis",
+                    "High temperatures stabilize protein structures",
+                    "High temperatures prevent DNA replication"
+                ],
+                answer: 0,
+                explanation: "Excessive heat denatures proteins, disrupting their function."
+            },
+            {
+                question: "Some functions of proteins in biological systems",
+                options: [
+                    "Enzymes (catalysis), structural support, transport, defense, movement, signaling",
+                    "Energy storage, insulation, hormone production",
+                    "Genetic coding, replication, transcription",
+                    "Lipid synthesis, membrane formation"
+                ],
+                answer: 0,
+                explanation: "Proteins serve as enzymes, structural components, transporters, and more."
+            },
+            {
+                question: "Amino acid side chains characteristics",
+                options: [
+                    "Charged (acidic or basic) hydrophilic; Uncharged polar hydrophilic; Nonpolar hydrophobic",
+                    "All side chains are hydrophobic",
+                    "Charged side chains are hydrophobic",
+                    "Nonpolar side chains are hydrophilic"
+                ],
+                answer: 0,
+                explanation: "Side chain properties determine hydrophilicity or hydrophobicity."
+            },
+            {
+                question: "What is a peptide bond?",
+                options: [
+                    "A covalent C–N bond formed between the carboxyl group of one amino acid and the amino group of another, releasing water",
+                    "A hydrogen bond between side chains",
+                    "An ionic bond between amino acids",
+                    "A van der Waals interaction in the protein core"
+                ],
+                answer: 0,
+                explanation: "Peptide bonds are covalent, formed via condensation."
+            },
+            {
+                question: "Nucleic acids are polymers made up of which of the following monomers?",
+                options: [
+                    "Nucleotides (phosphate group + five-carbon sugar + nitrogenous base)",
+                    "Amino acids (amino group + carboxyl group + R-group)",
+                    "Monosaccharides (sugars like glucose)",
+                    "Fatty acids and glycerol"
+                ],
+                answer: 0,
+                explanation: "Nucleic acids are made of nucleotides."
+            },
+            {
+                question: "What is the difference between a ribonucleotide and a deoxyribonucleotide?",
+                options: [
+                    "Ribonucleotide (RNA): sugar is ribose with an –OH on the 2′ carbon; Deoxyribonucleotide (DNA): sugar is deoxyribose with an –H at the 2′ carbon",
+                    "Ribonucleotide: has a phosphate; Deoxyribonucleotide: no phosphate",
+                    "Ribonucleotide: single-stranded; Deoxyribonucleotide: double-stranded",
+                    "Ribonucleotide: uses thymine; Deoxyribonucleotide: uses uracil"
+                ],
+                answer: 0,
+                explanation: "Ribonucleotides have ribose (-OH at 2′); deoxyribonucleotides have deoxyribose (-H)."
+            },
+            {
+                question: "What is/are the variable structure(s) of a nucleotide?",
+                options: [
+                    "The nitrogenous base and the sugar",
+                    "The phosphate group only",
+                    "The sugar and phosphate group",
+                    "The nitrogenous base only"
+                ],
+                answer: 0,
+                explanation: "Nucleotides vary in their nitrogenous base and sugar type."
+            },
+            {
+                question: "Which of the following includes all of the pyrimidines found in RNA and DNA?",
+                options: [
+                    "Cytosine (C), Uracil (U), Thymine (T)",
+                    "Adenine (A), Guanine (G), Cytosine (C)",
+                    "Uracil (U), Adenine (A), Thymine (T)",
+                    "Guanine (G), Cytosine (C), Thymine (T)"
+                ],
+                answer: 0,
+                explanation: "Pyrimidines are C, U (RNA), and T (DNA)."
+            },
+            {
+                question: "What are purine nitrogenous bases?",
+                options: [
+                    "Adenine (A) and Guanine (G) — double-ringed structures",
+                    "Cytosine (C) and Thymine (T) — single-ringed structures",
+                    "Uracil (U) and Adenine (A) — double-ringed structures",
+                    "Thymine (T) and Guanine (G) — single-ringed structures"
+                ],
+                answer: 0,
+                explanation: "Purines (A, G) have double-ring structures."
+            },
+            {
+                question: "What feature of single nucleotides provides the energy needed for polymerization when nucleic acids are formed?",
+                options: [
+                    "The phosphate groups (nucleoside triphosphates) — hydrolysis of extra phosphates releases energy",
+                    "The nitrogenous base’s double bonds",
+                    "The sugar’s hydroxyl groups",
+                    "The hydrogen bonds between bases"
+                ],
+                answer: 0,
+                explanation: "Phosphate group hydrolysis provides energy for nucleotide polymerization."
+            },
+            {
+                question: "What best describes DNA's secondary structure?",
+                options: [
+                    "A double antiparallel helix with complementary base pairing and a sugar–phosphate backbone",
+                    "A single-stranded coil with random base pairing",
+                    "A triple helix with ionic bonds",
+                    "A linear chain of nucleotides"
+                ],
+                answer: 0,
+                explanation: "DNA’s secondary structure is a double helix with complementary base pairing."
+            },
+            {
+                question: "A double-stranded DNA molecule contains a total of 120 purines and 120 pyrimidines. This DNA molecule could be composed of",
+                options: [
+                    "120 base pairs total, e.g., 60 A–T pairs and 60 G–C pairs",
+                    "240 base pairs with unequal purine-pyrimidine pairs",
+                    "120 nucleotides with no base pairing",
+                    "60 base pairs with only A–G pairs"
+                ],
+                answer: 0,
+                explanation: "Purines pair with pyrimidines, so 120 purines + 120 pyrimidines = 120 base pairs."
+            },
+            {
+                question: "Large amounts of DNA typically wrap around large proteins called; this forms the structure of DNA.",
+                options: [
+                    "Histones; tertiary structure",
+                    "Enzymes; secondary structure",
+                    "Ribosomes; primary structure",
+                    "Nucleotides; quaternary structure"
+                ],
+                answer: 0,
+                explanation: "DNA wraps around histones, forming its tertiary structure."
+            },
+            {
+                question: "What descriptions best fits the class of molecules known as nucleotides?",
+                options: [
+                    "Each nucleotide is composed of a phosphate group, a five-carbon sugar, and a nitrogenous base",
+                    "Composed of amino acids and R-groups",
+                    "Formed by glycerol and fatty acids",
+                    "Made of monosaccharides and glycosidic bonds"
+                ],
+                answer: 0,
+                explanation: "Nucleotides consist of a phosphate, sugar, and nitrogenous base."
+            },
+            {
+                question: "If the guanine content of a certain segment of double-stranded DNA is 28 percent, what is the adenine content?",
+                options: [
+                    "22% adenine",
+                    "28% adenine",
+                    "44% adenine",
+                    "56% adenine"
+                ],
+                answer: 0,
+                explanation: "G pairs with C (28%), so A + T = 44%; A = T = 22%."
+            },
+            {
+                question: "The sequence of one strand of DNA is shown below. What is the sequence of its complementary strand? 5’ – GGCCAAAT – 3’",
+                options: [
+                    "3’ – CCGGTTTA – 5’",
+                    "5’ – CCGGTTTA – 3’",
+                    "3’ – AATTCCGG – 5’",
+                    "5’ – GGCCAAAT – 3’"
+                ],
+                answer: 0,
+                explanation: "Complementary base pairing (A-T, G-C) gives 3’ – CCGGTTTA – 5’."
+            }
+        ];
+
+        // Shuffle questions
+        const shuffledQuestions = shuffle([...questions]);
+
+        // Shuffle options for each question and update the answer index
+        shuffledQuestions.forEach(q => {
+            const optionIndices = Array.from({ length: q.options.length }, (_, i) => i);
+            const shuffledIndices = shuffle([...optionIndices]);
+            const newOptions = shuffledIndices.map(i => q.options[i]);
+            const newAnswerIndex = shuffledIndices.indexOf(q.answer);
+            q.options = newOptions;
+            q.answer = newAnswerIndex;
+        });
+
+        let currentQuestion = 0;
+        let score = 0;
+        const totalQuestions = shuffledQuestions.length;
+
+        const quizContainer = document.getElementById('quiz-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const scoreDisplay = document.getElementById('score');
+        const finalScreen = document.getElementById('final-screen');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const restartBtn = document.getElementById('restart-btn');
+        const buttonContainer = document.getElementById('button-container');
+
+        function renderQuestion() {
+            const q = shuffledQuestions[currentQuestion];
+            quizContainer.innerHTML = `
+                <div class="question-card bg-indigo-100 p-4 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold text-indigo-800 mb-4">Question ${currentQuestion + 1}: ${q.question}</h2>
+                    ${q.options.map((option, index) => `
+                        <div class="mb-2">
+                            <input type="radio" name="answer" id="option${index}" value="${index}" class="mr-2">
+                            <label for="option${index}" class="text-indigo-700">${option}</label>
+                        </div>
+                    `).join('')}
+                    <div id="feedback${currentQuestion}" class="feedback mt-4"></div>
+                </div>
+            `;
+            prevBtn.disabled = currentQuestion === 0;
+            nextBtn.disabled = currentQuestion === totalQuestions - 1;
+            if (currentQuestion === totalQuestions - 1) {
+                nextBtn.textContent = 'Finish';
+            } else {
+                nextBtn.textContent = 'Next';
+            }
+            submitBtn.disabled = false;
+            scoreDisplay.textContent = `Score: ${score} / ${totalQuestions}`;
+            finalScreen.style.display = 'none';
+            buttonContainer.style.display = 'flex';
+        }
+
+        function showFeedback(isCorrect, selectedIndex) {
+            const feedbackDiv = document.getElementById(`feedback${currentQuestion}`);
+            if (isCorrect) {
+                feedbackDiv.textContent = "Correct! Great job! 🎉";
+                feedbackDiv.classList.add('correct');
+                feedbackDiv.style.display = 'block';
+            } else {
+                feedbackDiv.textContent = `Wrong! ${shuffledQuestions[currentQuestion].explanation}`;
+                feedbackDiv.classList.remove('correct');
+                feedbackDiv.style.display = 'block';
+            }
+        }
+
+        function triggerConfetti() {
+            confetti({
+                particleCount: 200,
+                spread: 70,
+                origin: { y: 0.6 },
+                zIndex: 1000
+            });
+            setTimeout(() => {
+                confetti({
+                    particleCount: 100,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 }
+                });
+                confetti({
+                    particleCount: 100,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 }
+                });
+            }, 500);
+        }
+
+        function showFinalScreen() {
+            quizContainer.style.display = 'none';
+            buttonContainer.style.display = 'none';
+            scoreDisplay.style.display = 'none';
+            finalScreen.style.display = 'block';
+            const percentage = ((score / totalQuestions) * 100).toFixed(2);
+            finalScoreDisplay.textContent = `Your Final Score: ${score} / ${totalQuestions} (${percentage}%)`;
+            triggerConfetti();
+            setTimeout(() => {
+                triggerConfetti();
+                alert(score === totalQuestions ? 
+                    "Perfect Score! You're a Biology Superstar! 🌟" : 
+                    `Great job! You scored ${score} out of ${totalQuestions}! Keep studying! 🚀`);
+            }, 1000);
+        }
+
+        submitBtn.addEventListener('click', () => {
+            const selected = document.querySelector('input[name="answer"]:checked');
+            if (!selected) {
+                alert("Please select an answer!");
+                return;
+            }
+            const selectedIndex = parseInt(selected.value);
+            const isCorrect = selectedIndex === shuffledQuestions[currentQuestion].answer;
+            if (isCorrect) score++;
+            showFeedback(isCorrect, selectedIndex);
+            submitBtn.disabled = true;
+            scoreDisplay.textContent = `Score: ${score} / ${totalQuestions}`;
+            if (score === totalQuestions && currentQuestion === totalQuestions - 1) {
+                triggerConfetti();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentQuestion < totalQuestions - 1) {
+                currentQuestion++;
+                renderQuestion();
+            } else if (currentQuestion === totalQuestions - 1) {
+                showFinalScreen();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestion();
+            }
+        });
+
+        restartBtn.addEventListener('click', () => {
+            currentQuestion = 0;
+            score = 0;
+            shuffle(shuffledQuestions);
+            shuffledQuestions.forEach(q => {
+                const optionIndices = Array.from({ length: q.options.length }, (_, i) => i);
+                const shuffledIndices = shuffle([...optionIndices]);
+                const newOptions = shuffledIndices.map(i => q.options[i]);
+                const newAnswerIndex = shuffledIndices.indexOf(q.answer);
+                q.options = newOptions;
+                q.answer = newAnswerIndex;
+            });
+            quizContainer.style.display = 'block';
+            renderQuestion();
+        });
+
+        renderQuestion();
+    </script>
+</body>
+</html>
