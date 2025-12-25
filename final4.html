@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molecular Biology Exam Ch 15–17</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px auto;
+            max-width: 900px;
+            padding: 15px;
+            background: #f7f9fc;
+            color: #333;
+            line-height: 1.6;
+        }
+        h1 { text-align: center; color: #2c3e50; }
+        .question {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .question:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.15); transform: translateY(-3px); }
+        .option {
+            margin: 12px 0;
+            padding: 14px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .option:hover {
+            background: #e8f4fd;
+            border-color: #3498db;
+            transform: translateX(8px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+        .option input { margin-right: 12px; }
+        .buttons { text-align: center; margin: 30px 0; }
+        button {
+            padding: 12px 28px;
+            margin: 8px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        button:hover { background: #2980b9; transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+        button:active { transform: translateY(0); }
+        button:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; }
+        #score { font-size: 40px; text-align: center; margin: 30px 0; }
+        .correct { color: green; font-weight: bold; }
+        .incorrect { color: red; font-weight: bold; }
+        .result-item {
+            background: white;
+            padding: 18px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 5px solid #ddd;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .result-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+            border-left-color: #3498db;
+        }
+        #mode-btn { background: #9b59b6; font-weight: bold; }
+        #mode-btn:hover { background: #8e44ad; }
+        #mode-btn.active { background: #27ae60; }
+        #mode-btn.active:hover { background: #219653; }
+    </style>
+</head>
+<body>
+    <h1>Molecular Biology Exam<br>Chapters 15–17</h1>
+    <div style="text-align:center; margin-bottom:20px;">
+        <button id="mode-btn">Challenging Mode</button>
+        <span id="mode-text" style="margin-left:12px; font-weight:bold; font-size:18px;">Easy Mode</span>
+    </div>
+    <div id="exam-container">
+        <div id="question-display"></div>
+        <div class="buttons">
+            <button id="prev-btn" onclick="prevQuestion()">Previous</button>
+            <button id="check-btn" onclick="checkAnswer()">Check Answer</button>
+            <button id="next-btn" onclick="nextQuestion()">Next</button>
+            <button id="submit-btn" onclick="submitExam()">Submit Exam</button>
+        </div>
+    </div>
+    <div id="results-container" style="display:none;">
+        <div id="score"></div>
+        <div id="results-list"></div>
+        <div class="buttons"><button onclick="location.reload()">Restart Exam</button></div>
+    </div>
+    <script>
+        function normalize(str) { return str.toString().trim(); }
+        const questionsData = [
+            // Chapter 15
+            { question: "A bacterium is infected with an experimentally constructed bacteriophage composed of the T2 phage protein coat and T4 phage DNA. The new phages produced would have", correct: "T4 protein and T4 DNA", explanation: "Only DNA enters the cell (Hershey-Chase experiment)." },
+            { question: "Viruses use host cell to make", correct: "viral nucleic acids and viral proteins", explanation: "Viruses hijack replication and translation machinery." },
+            { question: "In trying to determine whether DNA or protein is the genetic material, Hershey and Chase made use of which facts?", correct: "DNA contains phosphorus, whereas protein does not", explanation: "³²P labels DNA, ³⁵S labels protein." },
+            { question: "During the Hershey and Chase experiment, the T2 phage", correct: "injected 32P labeled DNA into cells", explanation: "Radioactivity from ³²P found inside bacteria." },
+            { question: "If the amount of guanine in a cell is 19 percent, what would you expect to be the percentage of thymine in this cell?", correct: "31 percent", explanation: "G = C = 19% → A+T = 62% → A = T = 31%." },
+            { question: "What is the most current description of a gene?", correct: "A DNA sequence that is expressed to form a functional product: either RNA or polypeptide", explanation: "Includes non-coding RNA genes." },
+            { question: "In analyzing the number of different bases in a DNA sample, what combinations would be consistent with the base-pairing rules?", correct: "A+G = C+T", explanation: "Purines = pyrimidines in double-stranded DNA." },
+            { question: "In the polymerization of DNA, a phosphodiester bond is formed between a phosphate group of the nucleotide being added and ________ of the last nucleotide in the polymer.", correct: "the 3’ OH", explanation: "DNA polymerase adds to 3′-OH end." },
+            { question: "Within a double-stranded DNA molecule, adenine forms hydrogen bonds with thymine and cytosine forms hydrogen bonds with guanine. This arrangement", correct: "permits complementary base pairing", explanation: "A-T (2 H-bonds), G-C (3 H-bonds)." },
+            { question: "What would be the consequence of having the two complementary DNA strands being held together by covalent bonds?", correct: "Covalent bonds are very strong bonds and it would be hard to break them and replicate the DNA strands", explanation: "Hydrogen bonds allow easy strand separation for replication." },
+            { question: "Who performed classic experiments that supported the semiconservative model of DNA replication?", correct: "Meselson and Stahl", explanation: "¹⁵N density-gradient centrifugation experiment." },
+            { question: "Semiconservative replication involves a template. What is the template?", correct: "One strand of the original DNA molecule", explanation: "Each parental strand serves as template for new strand." },
+            { question: "DNA is synthesized through a process known as", correct: "semiconservative replication", explanation: "Each daughter molecule has one old and one new strand." },
+            { question: "DNA contains the template needed to copy itself, but it has no catalytic activity in cells. What catalyzes the formation of phosphodiester bonds between adjacent nucleotides in the DNA polymer being formed?", correct: "DNA polymerase", explanation: "DNA polymerase has polymerase activity." },
+            { question: "What provides the energy for the polymerization reactions in DNA synthesis?", correct: "Deoxyribonucleotide triphosphate(dNTP)", explanation: "Cleavage of pyrophosphate releases energy." },
+            { question: "What is a major difference between eukaryotic DNA replication and prokaryotic DNA replication?", correct: "Prokaryotic chromosomes have a single origin of replication, whereas eukaryotic chromosomes have multiple origins of replication", explanation: "Due to much larger genome size in eukaryotes." },
+            { question: "During DNA replication, the enzyme ________ unwinds the DNA to create the replication bubble and the enzyme ________ moves ahead of the replication fork to relieve the supercoiling of the DNA.", correct: "helicase ; topoisomerase", explanation: "Helicase unwinds, topoisomerase relieves torsional stress." },
+            { question: "In E. coli, what is the function of DNA polymerase III?", correct: "Add nucleotides to the 3’ end of a growing DNA strand", explanation: "Main replicative polymerase in prokaryotes." },
+            { question: "The leading and the lagging strands differ in that", correct: "the leading strand is synthesized in the same direction as the movement of the replication fork, and the lagging strand is synthesized in the opposite direction", explanation: "Lagging strand synthesized as Okazaki fragments." },
+            { question: "What is the role of DNA ligase in the elongation of the lagging strand during DNA replication?", correct: "It joins Okazaki fragments together", explanation: "Seals nicks between Okazaki fragments." },
+            { question: "________ help(s) to hold the DNA strands apart while they are being replicated.", correct: "single-strand DNA binding proteins", explanation: "SSBs prevent re-annealing of ssDNA." },
+            { question: "Eukaryotic telomeres replicate differently than the rest of the chromosome because of", correct: "gaps left at the 5’ end of the lagging strand", explanation: "End-replication problem – RNA primer cannot be replaced at 5′ end." },
+            { question: "The DNA of telomeres has been highly conserved throughout the evolution of eukaryotes. This most likely reflects", correct: "the critical function of telomeres", explanation: "Protect chromosome ends from degradation/fusion." },
+            { question: "What is a telomere?", correct: "The ends of linear chromosomes", explanation: "Repetitive DNA + shelterin proteins." },
+            { question: "________ cell types is likely to demonstrate the lowest level of telomerase activity.", correct: "Somatic cells", explanation: "Telomerase is repressed in most somatic cells." },
+            { question: "Telomere shortening is a problem in", correct: "only eukaryotic cells", explanation: "Prokaryotes have circular chromosomes – no end problem." },
+            // Chapter 16
+            { question: "What is gene expression?", correct: "Process of converting information in DNA into functioning molecules within the cells", explanation: "Transcription + translation = gene expression." },
+            { question: "The One-Gene, One-Polypeptide Hypothesis states that:", correct: "each gene is responsible for the synthesis of a single polypeptide chain", explanation: "Beadle & Tatum – Neurospora work." },
+            { question: "Which scientists are most closely associated with the experiments that led to the One-Gene, One-Polypeptide Hypothesis?", correct: "Beadle and tatum", explanation: "One gene → one enzyme (later polypeptide)." },
+            { question: "Knockout mice have been genetically altered to knockout specific genes. How are these mice most often used in research?", correct: "To determine the role of proteins coded for by those genes that are knocked out", explanation: "Loss-of-function phenotype reveals protein function." },
+            { question: "The statement “DNA → RNA → Proteins” is known as", correct: "The central dogma of molecular biology", explanation: "Crick’s central dogma." },
+            { question: "________ is not directly synthesized from a DNA template.", correct: "Amino acids", explanation: "Proteins are made by translation of mRNA." },
+            { question: "In the process of transcription, ________ is synthesized.", correct: "RNA", explanation: "RNA polymerase synthesizes RNA." },
+            { question: "In Eukaryotes, the process of ________ which involves making mRNA from a gene sequence occurs in the ________, and the process of ________ which involves making proteins from the mRNA occurs in the ________.", correct: "transcription ; nucleus ; translation ; cytoplasm", explanation: "Nuclear envelope separates the two processes." },
+            { question: "What is the name of the enzyme present in some retroviruses that synthesizes DNA from RNA?", correct: "Reverse transcriptase", explanation: "Used by HIV and other retroviruses." },
+            { question: "________ is to transcription as ________ is to translation.", correct: "RNA polymerase ; a ribosome", explanation: "RNA pol synthesizes RNA; ribosome synthesizes protein." },
+            { question: "Given the following DNA template -TTTTTTT, what bases would you find in a complementary RNA strand and where would they be synthesized?", correct: "A-A-A-A-A-A-A ; nucleus", explanation: "T→A in RNA, transcription occurs in nucleus." },
+            { question: "Suppose that you have the following DNA template: 3’ ATG-GGC-AAT-CGC 5’. What would be the sequence of the mRNA generated from the above DNA?", correct: "UAC-CCG-UUA-GCG 3’", explanation: "Complementary, antiparallel, T→U." },
+            { question: "Which codon typically serves as the start signal for translation?", correct: "AUG", explanation: "Codes for methionine, initiation codon." },
+            { question: "Stop codons in the genetic code:", correct: "UAA,UAG,UGA", explanation: "Termination codons – no tRNA binds." },
+            { question: "What does it mean when we say the genetic code is unambiguous?", correct: "The same codon always specifies the same amino acid", explanation: "Each codon has one meaning." },
+            { question: "What does it mean to say that the genetic code has redundancy?", correct: "More than one codon can specify the addition of the same amino acid", explanation: "Degenerate code – 64 codons for 20 aa + stop." },
+            { question: "How many bases are required to code for a single amino acid?", correct: "3", explanation: "Triplet code." },
+            { question: "The genetic code is considered nearly universal because", correct: "all codons specify the same amino acids in nearly all organisms", explanation: "Very few exceptions (e.g., mitochondria)." },
+            { question: "If each codon consisted of two nucleotides what would be the maximum amount of amino acids that could be encoded by all combinations of the nucleotides in the codon?", correct: "16", explanation: "4² = 16 possible codons." },
+            { question: "The mutation resulting in sickle cell disease changes one base pair of DNA so that a codon now codes for a different amino acid, making it an example of a", correct: "missense mutation", explanation: "Glu → Val in β-globin." },
+            { question: "A mutation that results in premature termination of translation", correct: "nonsense", explanation: "Creates a premature stop codon." },
+            { question: "What is silent mutation?", correct: "A change in DNA sequence that does not alter the resulting amino acid", explanation: "Due to degeneracy of code." },
+            { question: "A frameshift mutation could result from", correct: "either an insertion or deletion of a base", explanation: "Changes reading frame downstream (unless multiple of 3)." },
+            // Chapter 17
+            { question: "In E. coli (bacteria), if RNA polymerase is missing ________, then transcription initiation would not occur at the appropriate initiation sites.", correct: "sigma", explanation: "Sigma factor recognizes promoter." },
+            { question: "You want to engineer a eukaryotic gene into a bacterial colony so the bacteria express the gene. What must be included in addition to the coding exons of the gene?", correct: "A bacterial promoter sequence", explanation: "Bacteria do not recognize eukaryotic promoters." },
+            { question: "________ is central to the initiation of transcription in bacteria.", correct: "binding of sigma to the promoter region", explanation: "Sigma + core = holoenzyme that binds promoter." },
+            { question: "Termination of transcription in bacteria occurs when", correct: "a hairpin secondary structure forms in the RNA transcript, and it separates from the RNA polymerase", explanation: "Rho-independent (intrinsic) termination." },
+            { question: "Once transcription begins, what happens to the σ (sigma) factor in the bacterial Holoenzyme?", correct: "It dissociates after initiating RNA synthesis", explanation: "Core enzyme continues elongation." },
+            { question: "________ occurs in prokaryotes but NOT in eukaryotes.", correct: "concurrent transcription and translation", explanation: "No nuclear membrane in prokaryotes." },
+            { question: "Ribosomes can attach to prokaryotic messenger RNA", correct: "before transcription is complete", explanation: "Coupled transcription–translation in prokaryotes." },
+            { question: "What is the primary purpose of RNA splicing?", correct: "To remove introns and join exons into a continuous sequence", explanation: "Spliceosome removes introns." },
+            { question: "Introns are best described as:", correct: "noncoding regions removed from pre-mRNA", explanation: "Intervening sequences." },
+            { question: "The adapter molecule used in translation is", correct: "transfer RNA(tRNA)", explanation: "tRNA brings amino acids to ribosome." },
+            { question: "There are 61 mRNA codons that specify an amino acid, but only 45 tRNAs. This is best explained by the fact that", correct: "the rules for base pairing between the third base of a codon and tRNA are flexible", explanation: "Wobble hypothesis." },
+            { question: "The anticodon of a particular tRNA molecule is", correct: "complementary to the corresponding mRNA codon", explanation: "Anticodon–codon base pairing." },
+            { question: "The ribosome binding site of prokaryotes is also known as the", correct: "Shine-Dalgarno sequence", explanation: "Complementary to 16S rRNA." },
+            { question: "During elongation, which site in the ribosome represents the location where a codon is being read?", correct: "A site", explanation: "Aminoacyl site – new charged tRNA enters." },
+            { question: "Once a peptide bond has been formed between the amino acid attached to the tRNA in the P site and the amino acid associated with the tRNA in the A site, what occurs next?", correct: "Translocation", explanation: "Ribosome moves one codon forward." },
+            { question: "________ if missing, would usually prevent translation from starting in eukaryotes.", correct: "5’cap and AUG codon", explanation: "Both needed for ribosome recruitment in eukaryotes." },
+            { question: "Translation requires", correct: "mRNA, tRNA, and rRNA", explanation: "All three RNAs are essential components of translation." },
+
+            // === NEW CHROMOSOMAL MUTATION QUESTIONS ===
+            { 
+                question: "The type of chromosomal mutation that occurs when a segment of a chromosome is inserted into (or attached to) another non-homologous chromosome is translocation. (Definition from slides: “Translocation—section of chromosome breaks off and becomes attached to another chromosome.” This typically involves non-homologous chromosomes.)", 
+                correct: "translocation", 
+                explanation: "Translocation involves the transfer of a segment from one chromosome to a non-homologous chromosome." 
+            },
+            { 
+                question: "The chromosomal mutation that results in the reversal of a segment within the same chromosome is inversion. (Definition from slides: “Inversion—segment of chromosome breaks off, flips around, and rejoins.”)", 
+                correct: "inversion", 
+                explanation: "Inversion reverses the orientation of a segment within the same chromosome." 
+            },
+            { 
+                question: "A mutation where a chromosome segment is copied and added to the same chromosome is called duplication. (Definition from slides: “Duplication—segment of chromosome is present in multiple copies.”)", 
+                correct: "duplication", 
+                explanation: "Duplication results in extra copies of a segment on the same chromosome." 
+            }
+        ];
+
+        const easyOptions = [
+            ["T4 protein and T4 DNA", "T2 protein and T2 DNA", "T2 protein and T4 DNA", "T4 protein and T2 DNA"],
+            ["viral nucleic acids and viral proteins", "only viral nucleic acids", "only viral proteins", "host proteins"],
+            ["DNA contains phosphorus, whereas protein does not", "DNA contains sulfur but not phosphorus", "Protein contains sulfur only", "Both contain phosphorus and sulfur"],
+            ["injected 32P labeled DNA into cells", "injected 35S labeled protein into cells", "kept both outside", "injected both"],
+            ["31 percent", "19 percent", "38 percent", "62 percent"],
+            ["A DNA sequence that is expressed to form a functional product: either RNA or polypeptide", "Only a protein-coding sequence", "A sequence that codes for one enzyme", "A unit of inheritance only"],
+            ["A+G = C+T", "A + T = G + C", "A = C and G = T", "A + C = G + T"],
+            ["the 3’ OH", "the 5’ phosphate", "the base", "the 2’ OH"],
+            ["permits complementary base pairing", "makes DNA very stable only", "prevents replication", "allows bending only"],
+            ["Covalent bonds are very strong bonds and it would be hard to break them and replicate the DNA strands", "No effect on replication", "Replication would be faster", "Strands would separate too easily"],
+            ["Meselson and Stahl", "Watson and Crick", "Hershey and Chase", "Griffith"],
+            ["One strand of the original DNA molecule", "Both strands together", "RNA primer", "Protein scaffold"],
+            ["semiconservative replication", "conservative replication", "dispersive replication", "transcription"],
+            ["DNA polymerase", "RNA polymerase", "Helicase", "Ligase"],
+            ["Deoxyribonucleotide triphosphate(dNTP)", "ATP", "GTP", "NADH"],
+            ["Prokaryotic chromosomes have a single origin of replication, whereas eukaryotic chromosomes have multiple origins of replication", "Prokaryotes have multiple origins", "Eukaryotes replicate only one strand", "No difference"],
+            ["helicase ; topoisomerase", "topoisomerase ; helicase", "ligase ; primase", "polymerase ; ligase"],
+            ["Add nucleotides to the 3’ end of a growing DNA strand", "Remove primers", "Proofread only", "Join fragments"],
+            ["the leading strand is synthesized in the same direction as the movement of the replication fork, and the lagging strand is synthesized in the opposite direction", "the leading strand is discontinuous", "only lagging uses primers", "leading is 3’→5’"],
+            ["It joins Okazaki fragments together", "Adds nucleotides", "Removes primers", "Unwinds DNA"],
+            ["single-strand DNA binding proteins", "Helicase", "Topoisomerase", "Primase"],
+            ["gaps left at the 5’ end of the lagging strand", "gaps at the 3’ end", "no origins", "telomerase absence"],
+            ["the critical function of telomeres", "random chance", "high mutation rate", "coding for proteins"],
+            ["The ends of linear chromosomes", "The centromere", "The origin of replication", "A replication fork"],
+            ["Somatic cells", "Germ cells", "Stem cells", "Cancer cells"],
+            ["only eukaryotic cells", "prokaryotic cells", "both", "viruses"],
+            ["Process of converting information in DNA into functioning molecules within the cells", "DNA replication", "Cell division", "Protein degradation"],
+            ["each gene is responsible for the synthesis of a single polypeptide chain", "one gene makes multiple polypeptides", "multiple genes make one polypeptide", "genes code for RNA only"],
+            ["Beadle and tatum", "Watson and Crick", "Meselson and Stahl", "Franklin"],
+            ["To determine the role of proteins coded for by those genes that are knocked out", "To overexpress genes", "To study DNA replication", "To create hybrids"],
+            ["The central dogma of molecular biology", "Operon model", "Genetic code", "Semiconservative replication"],
+            ["Amino acids", "mRNA", "tRNA", "rRNA"],
+            ["RNA", "DNA", "Protein", "Lipid"],
+            ["transcription ; nucleus ; translation ; cytoplasm", "translation ; nucleus ; transcription ; cytoplasm", "both in nucleus", "both in cytoplasm"],
+            ["Reverse transcriptase", "DNA polymerase", "RNA polymerase", "Integrase"],
+            ["RNA polymerase ; a ribosome", "Ribosome ; RNA polymerase", "DNA polymerase ; tRNA", "tRNA ; DNA polymerase"],
+            ["A-A-A-A-A-A-A ; nucleus", "U-U-U-U-U-U-U ; nucleus", "T-T-T-T-T-T-T ; nucleus", "A-A-A-A-A-A-A ; cytoplasm"],
+            ["UAC-CCG-UUA-GCG 3’", "UAC-CCG-UUA-GCG 5’", "AUG-GGC-AAU-CGC 5’", "TAC-CCG-TTA-GCG 3’"],
+            ["AUG", "UAA", "UAG", "UGA"],
+            ["UAA,UAG,UGA", "AUG, UAA, UAG", "UAA only", "AUG only"],
+            ["The same codon always specifies the same amino acid", "One codon can code for multiple amino acids", "Some codons have no meaning", "Codons overlap"],
+            ["More than one codon can specify the addition of the same amino acid", "Only one codon per amino acid", "No stop codons", "Different organisms use different codes"],
+            ["3", "1", "2", "4"],
+            ["all codons specify the same amino acids in nearly all organisms", "it differs in every organism", "only bacteria use it", "only eukaryotes use it"],
+            ["16", "4", "64", "20"],
+            ["missense mutation", "nonsense mutation", "silent mutation", "frameshift mutation"],
+            ["nonsense", "missense", "silent", "frameshift"],
+            ["A change in DNA sequence that does not alter the resulting amino acid", "Changes amino acid", "Stops translation early", "Shifts reading frame"],
+            ["either an insertion or deletion of a base", "substitution only", "translocation only", "inversion only"],
+            ["sigma", "rho", "beta", "alpha"],
+            ["A bacterial promoter sequence", "Introns", "Poly-A tail", "5' cap"],
+            ["binding of sigma to the promoter region", "Binding of rho", "Elongation factors", "Termination sequence"],
+            ["a hairpin secondary structure forms in the RNA transcript, and it separates from the RNA polymerase", "ribosome binds", "sigma rebinds", "DNA unwinds"],
+            ["It dissociates after initiating RNA synthesis", "It stays bound forever", "It adds nucleotides", "It terminates transcription"],
+            ["concurrent transcription and translation", "Splicing", "Polyadenylation", "Capping"],
+            ["before transcription is complete", "only after termination", "only in nucleus", "never"],
+            ["To remove introns and join exons into a continuous sequence", "To add 5' cap", "To add poly-A tail", "To degrade RNA"],
+            ["noncoding regions removed from pre-mRNA", "coding regions", "promoters", "terminators"],
+            ["transfer RNA(tRNA)", "mRNA", "rRNA", "snRNA"],
+            ["the rules for base pairing between the third base of a codon and tRNA are flexible", "multiple tRNAs per codon strictly", "eukaryotes have fewer codons", "prokaryotes have more tRNAs"],
+            ["complementary to the corresponding mRNA codon", "identical to the mRNA codon", "complementary to DNA", "random"],
+            ["Shine-Dalgarno sequence", "Kozak sequence", "Poly-A tail", "5' cap"],
+            ["A site", "P site", "E site", "Entry site"],
+            ["Translocation", "New tRNA entry", "Termination", "Release"],
+            ["5’cap and AUG codon", "Poly-A tail only", "Stop codon", "Introns"],
+            ["mRNA, tRNA, and rRNA", "Only mRNA", "Only tRNA", "DNA and RNA polymerase"],
+
+            // Easy options for new questions
+            ["translocation", "inversion", "duplication", "deletion"],
+            ["inversion", "translocation", "duplication", "deletion"],
+            ["duplication", "inversion", "translocation", "deletion"]
+        ];
+
+        const challengingOptions = [
+            ["T4 protein and T4 DNA", "T2 protein and T4 DNA", "T4 protein and T2 DNA", "T2 protein and partially replicated T4 DNA"],
+            ["viral nucleic acids and viral proteins", "viral nucleic acids with host proteins", "host nucleic acids and viral proteins", "viral proteins assembled using host nucleic acids"],
+            ["DNA contains phosphorus, whereas protein does not", "DNA contains sulfur, whereas protein contains phosphorus", "protein contains phosphorus but not sulfur", "DNA and protein both incorporate radioactive sulfur"],
+            ["injected 32P labeled DNA into cells", "attached 32P labeled DNA to the cell surface", "injected 35S labeled protein into cells", "transferred both labels simultaneously into the bacterial cytoplasm"],
+            ["31 percent", "19 percent", "38 percent", "43 percent"],
+            ["A DNA sequence that is expressed to form a functional product: either RNA or polypeptide", "A DNA sequence that is transcribed into mRNA and translated into a single polypeptide", "A DNA sequence that directly encodes one functional enzyme", "A DNA segment that serves solely as a template for protein synthesis"],
+            ["A+G = C+T", "A+T = G+C", "A = G and C = T", "A/C = G/T ratio equals 1"],
+            ["the 3’ OH", "the 5’ triphosphate", "the 3’ phosphate", "the 2’ hydroxyl on ribose"],
+            ["permits complementary base pairing", "ensures irreversible strand association", "facilitates permanent covalent linkage", "allows precise covalent bonding between strands"],
+            ["Covalent bonds are very strong bonds and it would be hard to break them and replicate the DNA strands", "Covalent bonds would make strand separation easier during replication", "Covalent bonds would accelerate the rate of DNA unwinding", "Covalent bonds would have no impact on replication fidelity"],
+            ["Meselson and Stahl", "Watson and Crick", "Hershey and Chase", "Avery, MacLeod, and McCarty"],
+            ["One strand of the original DNA molecule", "Both parental strands acting in concert", "A newly synthesized complementary strand", "An RNA primer annealed to the origin"],
+            ["semiconservative replication", "conservative replication with parental duplex intact", "dispersive replication with mixed segments", "bidirectional conservative synthesis"],
+            ["DNA polymerase", "RNA primase", "DNA helicase", "DNA ligase"],
+            ["Deoxyribonucleotide triphosphate(dNTP)", "Adenosine triphosphate (ATP) hydrolysis", "Guanosine triphosphate (GTP) from elongation factors", "Pyrophosphate release from rNTPs"],
+            ["Prokaryotic chromosomes have a single origin of replication, whereas eukaryotic chromosomes have multiple origins of replication", "Eukaryotic chromosomes have a single origin while prokaryotic have multiple", "Prokaryotes replicate both strands simultaneously without origins", "Eukaryotes require linear origins unlike circular prokaryotic"],
+            ["helicase ; topoisomerase", "topoisomerase ; helicase", "primase ; gyrase", "ligase ; polymerase III"],
+            ["Add nucleotides to the 3’ end of a growing DNA strand", "Excise RNA primers and replace with DNA", "Seal phosphodiester bonds between Okazaki fragments", "Relieve supercoiling ahead of the fork"],
+            ["the leading strand is synthesized in the same direction as the movement of the replication fork, and the lagging strand is synthesized in the opposite direction", "the leading strand is synthesized discontinuously while the lagging strand is continuous", "the leading strand requires frequent priming unlike the lagging strand", "the lagging strand is synthesized 5′→3′ like the leading strand"],
+            ["It joins Okazaki fragments together", "It synthesizes new Okazaki fragments continuously", "It removes RNA primers from the lagging strand", "It unwinds the template for lagging strand synthesis"],
+            ["single-strand DNA binding proteins", "helicase and primase complex", "topoisomerase II dimers", "DNA gyrase and SSB homologs"],
+            ["gaps left at the 5’ end of the lagging strand", "gaps left at the 3’ end of the leading strand", "incomplete priming at telomere origins", "failure of telomerase to extend the leading strand"],
+            ["the critical function of telomeres", "their high rate of evolutionary turnover", "their role in encoding shelterin proteins", "their susceptibility to recombination events"],
+            ["The ends of linear chromosomes", "The centromeric constriction region", "The primary origin of replication", "The site of bidirectional replication forks"],
+            ["Somatic cells", "Germ-line cells", "Pluripotent stem cells", "Telomerase-positive cancer cells"],
+            ["only eukaryotic cells", "both eukaryotic and prokaryotic linear chromosomes", "circular prokaryotic chromosomes only", "viral genomes with linear DNA"],
+            ["Process of converting information in DNA into functioning molecules within the cells", "Direct synthesis of proteins from DNA templates", "Replication of DNA followed by cell division", "Degradation of mRNA into functional peptides"],
+            ["each gene is responsible for the synthesis of a single polypeptide chain", "each gene directs synthesis of multiple related polypeptides", "multiple genes collaborate to produce one polypeptide", "each gene encodes a functional RNA without polypeptide"],
+            ["Beadle and tatum", "Watson and Crick", "Meselson and Stahl", "Chargaff and Franklin"],
+            ["To determine the role of proteins coded for by those genes that are knocked out", "To induce overexpression of the targeted protein", "To observe compensatory upregulation of paralogous genes", "To create models for dominant-negative phenotypes"],
+            ["The central dogma of molecular biology", "The operon model of gene regulation", "The wobble hypothesis of codon recognition", "The one-gene one-enzyme hypothesis"],
+            ["Amino acids", "pre-mRNA", "transfer RNA", "ribosomal RNA"],
+            ["RNA", "double-stranded DNA", "polypeptide chains", "glycoproteins"],
+            ["transcription ; nucleus ; translation ; cytoplasm", "transcription ; cytoplasm ; translation ; nucleus", "both transcription and translation ; nucleus", "both transcription and translation ; cytoplasm"],
+            ["Reverse transcriptase", "RNA-dependent DNA polymerase variant", "DNA-dependent RNA polymerase", "Viral integrase"],
+            ["RNA polymerase ; a ribosome", "DNA polymerase ; transfer RNA", "Ribosome ; RNA polymerase", "Transfer RNA ; aminoacyl synthetase"],
+            ["A-A-A-A-A-A-A ; nucleus", "U-U-U-U-U-U-U ; nucleus", "A-A-A-A-A-A-A ; cytoplasm", "U-U-U-U-U-U-U ; cytoplasm"],
+            ["UAC-CCG-UUA-GCG 3’", "UAC-CCG-UUA-GCG 5’", "AUG-GGC-AAU-CGC 3’", "UAC-CCG-UUA-GCG antiparallel"],
+            ["AUG", "UAC", "GUA", "AUA"],
+            ["UAA,UAG,UGA", "UAA,UAG only", "UAA,UGA only", "AUG,UAA,UAG"],
+            ["The same codon always specifies the same amino acid", "A single codon may specify several amino acids", "Certain codons are ambiguous in mitochondria", "Codons can overlap across reading frames"],
+            ["More than one codon can specify the addition of the same amino acid", "Each amino acid is specified by exactly one codon", "Stop signals are encoded by multiple unique codons", "The code varies significantly across species"],
+            ["3", "2", "4", "6"],
+            ["all codons specify the same amino acids in nearly all organisms", "codon assignments differ markedly between prokaryotes and eukaryotes", "mitochondrial genomes use a completely different code", "nuclear and chloroplast genomes use distinct codes"],
+            ["16", "64", "20", "256"],
+            ["missense mutation", "nonsense mutation", "silent mutation", "frameshift insertion"],
+            ["nonsense", "missense resulting in early termination", "silent with premature stop", "frameshift leading to stop"],
+            ["A change in DNA sequence that does not alter the resulting amino acid", "A substitution that changes the amino acid to a similar one", "A mutation that introduces a stop codon prematurely", "An insertion that shifts the reading frame"],
+            ["either an insertion or deletion of a base", "a single base substitution not in multiples of three", "a chromosomal inversion of three bases", "a balanced translocation of one base"],
+            ["sigma", "rho termination factor", "core beta subunit", "alpha CTD domain"],
+            ["A bacterial promoter sequence", "Eukaryotic introns and splice sites", "Poly-A addition signal", "5' capping recognition elements"],
+            ["binding of sigma to the promoter region", "recruitment of rho termination factor", "assembly of elongation complex", "formation of open complex by core enzyme"],
+            ["a hairpin secondary structure forms in the RNA transcript, and it separates from the RNA polymerase", "rho factor binds and unwinds the RNA-DNA hybrid", "sigma factor rebinds to terminate", "ribosome stalling causes polymerase release"],
+            ["It dissociates after initiating RNA synthesis", "It remains associated throughout elongation", "It catalyzes nucleotide addition post-initiation", "It recruits rho for termination"],
+            ["concurrent transcription and translation", "intron removal by spliceosome", "5' capping of pre-mRNA", "3' polyadenylation"],
+            ["before transcription is complete", "only after full mRNA maturation", "simultaneously with splicing", "only in the nucleus"],
+            ["To remove introns and join exons into a continuous sequence", "To add the 7-methylguanosine cap", "To append the poly-A tail", "To export mature mRNA"],
+            ["noncoding regions removed from pre-mRNA", "coding sequences retained in mature mRNA", "regulatory sequences in the promoter", "translational enhancers"],
+            ["transfer RNA(tRNA)", "messenger RNA(mRNA)", "ribosomal RNA(rRNA)", "small nuclear RNA(snRNA)"],
+            ["the rules for base pairing between the third base of a codon and tRNA are flexible", "each codon requires a unique dedicated tRNA", "tRNAs are modified post-transcriptionally to reduce numbers", "wobble is restricted to the first base"],
+            ["complementary to the corresponding mRNA codon", "identical in sequence to the mRNA codon", "complementary to the template DNA strand", "parallel to the coding DNA strand"],
+            ["Shine-Dalgarno sequence", "Kozak consensus sequence", "Internal ribosome entry site", "Cap-binding complex site"],
+            ["A site", "P site", "E site", "Peptidyl transferase center"],
+            ["Translocation", "Peptidyl transferase reaction", "Accommodation of new tRNA", "EF-Tu mediated delivery"],
+            ["5’cap and AUG codon", "Poly-A tail and stop codon", "Kozak sequence only", "Internal ribosome entry site"],
+            ["mRNA, tRNA, and rRNA", "mRNA and ribosomes only", "tRNA and aminoacyl synthetases", "mRNA and initiation factors only"],
+
+            // Challenging options for new questions
+            ["translocation", "reciprocal translocation between homologous chromosomes", "insertion of a segment into a homologous chromosome", "non-reciprocal transfer within the same chromosome"],
+            ["inversion", "pericentric inversion that includes the centromere", "paracentric inversion within one chromosome arm", "translocation with segment reversal"],
+            ["duplication", "tandem duplication via unequal crossing-over", "reverse duplication forming a palindrome", "dispersed duplication via transposable element"]
+        ];
+
+        let isChallenging = false;
+        let questions = [];
+        let currentIndex = 0;
+        let userAnswers = [];
+        let locked = [];
+
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function initExam() {
+            const shuffledQuestionsData = shuffleArray(questionsData);
+            questions = shuffledQuestionsData.map((q, originalIndex) => {
+                const opts = isChallenging ? challengingOptions[questionsData.indexOf(q)] : easyOptions[questionsData.indexOf(q)];
+                const shuffledOpts = shuffleArray(opts);
+                const correctIndex = shuffledOpts.indexOf(normalize(q.correct));
+                return { ...q, shuffledOptions: shuffledOpts, correctIndex, originalIndex: questionsData.indexOf(q) };
+            });
+            userAnswers = new Array(questions.length).fill(-1);
+            locked = new Array(questions.length).fill(false);
+            currentIndex = 0;
+            displayQuestion();
+        }
+
+        document.getElementById('mode-btn').addEventListener('click', () => {
+            isChallenging = !isChallenging;
+            document.getElementById('mode-text').textContent = isChallenging ? "Challenging Mode" : "Easy Mode";
+            document.getElementById('mode-btn').classList.toggle('active', isChallenging);
+            initExam();
+        });
+
+        function displayQuestion() {
+            const q = questions[currentIndex];
+            let html = `<div class="question"><h2>Question ${currentIndex + 1} of ${questions.length}</h2><p><strong>${q.question}</strong></p>`;
+            q.shuffledOptions.forEach((opt, i) => {
+                html += `<div class="option">
+                    <input type="radio" id="opt${i}" name="answer" value="${i}" ${userAnswers[currentIndex] === i ? 'checked' : ''} ${locked[currentIndex] ? 'disabled' : ''}>
+                    <label for="opt${i}" id="label${i}">${opt}</label>
+                </div>`;
+            });
+            html += `</div>`;
+            document.getElementById('question-display').innerHTML = html;
+
+            if (locked[currentIndex] && userAnswers[currentIndex] !== -1) {
+                const sel = document.getElementById(`label${userAnswers[currentIndex]}`);
+                const cor = document.getElementById(`label${q.correctIndex}`);
+                if (userAnswers[currentIndex] === q.correctIndex) sel.classList.add('correct');
+                else { sel.classList.add('incorrect'); cor.classList.add('correct'); }
+            }
+
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').disabled = currentIndex === questions.length - 1;
+        }
+
+        function checkAnswer() {
+            const sel = document.querySelector('input[name="answer"]:checked');
+            if (!sel) { alert("Please select an answer!"); return; }
+            userAnswers[currentIndex] = parseInt(sel.value);
+            locked[currentIndex] = true;
+            displayQuestion();
+        }
+
+        function nextQuestion() {
+            if (!locked[currentIndex]) checkAnswer();
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                displayQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                displayQuestion();
+            }
+        }
+
+        function submitExam() {
+            if (userAnswers.includes(-1) && !confirm("Some questions unanswered. Submit anyway?")) return;
+            let correctCount = userAnswers.filter((a, i) => a === questions[i].correctIndex).length;
+            const percent = (correctCount / questions.length * 100).toFixed(1);
+            document.getElementById('score').innerHTML = `<strong style="color:${correctCount >= questions.length*0.7 ? 'green':'red'}">${correctCount}/${questions.length} correct — ${percent}%</strong>`;
+
+            const sortedQuestions = [...questions].sort((a, b) => a.originalIndex - b.originalIndex);
+            let results = '';
+            sortedQuestions.forEach((q, displayIndex) => {
+                const actualIndex = questions.indexOf(q);
+                const userAns = userAnswers[actualIndex] !== -1 ? q.shuffledOptions[userAnswers[actualIndex]] : 'Not answered';
+                const isCorrect = userAnswers[actualIndex] === q.correctIndex;
+                results += `<div class="result-item" style="border-left-color:${isCorrect?'#27ae60':'#e74c3c'}">
+                    <h3>Question ${displayIndex + 1} ${isCorrect?'✓ Correct':'✗ Incorrect'}</h3>
+                    <p><strong>${q.question}</strong></p>
+                    <p>Your answer: <span class="${isCorrect?'correct':'incorrect'}">${userAns}</span></p>
+                    ${!isCorrect ? `<p>Correct answer: <span class="correct">${q.correct}</span></p>` : ''}
+                    <p><em>${q.explanation}</em></p>
+                </div>`;
+            });
+            document.getElementById('results-list').innerHTML = results;
+            document.getElementById('exam-container').style.display = 'none';
+            document.getElementById('results-container').style.display = 'block';
+        }
+
+        initExam();
+    </script>
+</body>
+</html>
